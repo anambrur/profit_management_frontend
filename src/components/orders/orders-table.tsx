@@ -24,12 +24,15 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { useOrders, usePrefetchOrders } from '@/hooks/userOrder';
+import { Store } from '@/hooks/useStoreData';
+import { useAllowedStores } from '@/store/useAuthStore';
 import {
   ChevronLeft,
   ChevronRight,
   ChevronsLeft,
   ChevronsRight,
   RefreshCw,
+  X,
 } from 'lucide-react';
 import Image from 'next/image';
 import { useState } from 'react';
@@ -78,7 +81,10 @@ export function OrdersTable() {
   const [search, setSearch] = useState('');
   const [status, setStatus] = useState('');
   const [storeId, setStoreId] = useState('');
-
+  const getStores = useAllowedStores();
+  console.log('status', status);
+  console.log('storeId', storeId);
+  console.log('search', search);
   const { data, isLoading, error, refetch, isFetching } = useOrders({
     page,
     limit,
@@ -102,12 +108,11 @@ export function OrdersTable() {
   const handleLimitChange = (value: string) => {
     const newLimit = Number(value);
     setLimit(newLimit);
-    setPage(1); // Reset to page 1 when changing limit
+    setPage(1);
   };
 
   const handlePageChange = (newPage: number) => {
     setPage(newPage);
-    // Prefetch next page for better UX
     if (data && newPage < data.pages) {
       prefetchNextPage(newPage, limit, search, status);
     }
@@ -118,6 +123,15 @@ export function OrdersTable() {
   const goToPreviousPage = () => handlePageChange(Math.max(1, page - 1));
   const goToNextPage = () =>
     data && handlePageChange(Math.min(data.pages, page + 1));
+
+  const clearFilters = () => {
+    setSearch('');
+    setStatus('');
+    setStoreId('');
+    setPage(1);
+  };
+
+  const hasFilters = search || status || storeId;
 
   if (error) {
     return (
@@ -170,7 +184,6 @@ export function OrdersTable() {
             </TableBody>
           </Table>
         </div>
-        {/* Loading pagination skeleton */}
         <div className="flex items-center justify-between">
           <Skeleton className="h-8 w-32" />
           <div className="flex items-center space-x-2">
@@ -204,6 +217,11 @@ export function OrdersTable() {
     return (
       <div className="rounded-lg border bg-card shadow-sm p-8 text-center">
         <p className="text-muted-foreground">No orders found.</p>
+        {hasFilters && (
+          <Button onClick={clearFilters} variant="outline" className="mt-4">
+            Clear filters
+          </Button>
+        )}
       </div>
     );
   }
@@ -213,7 +231,6 @@ export function OrdersTable() {
 
   return (
     <div className="space-y-4">
-      {/* Header with refresh button */}
       <div className="flex items-center justify-between">
         <div className="flex items-center space-x-2">
           <h2 className="text-lg font-semibold">Orders</h2>
@@ -224,229 +241,296 @@ export function OrdersTable() {
             </div>
           )}
         </div>
-        <Button
-          onClick={() => refetch()}
-          variant="outline"
-          size="sm"
-          disabled={isFetching}
-        >
-          <RefreshCw
-            className={`h-4 w-4 mr-2 ${isFetching ? 'animate-spin' : ''}`}
-          />
-          Refresh
-        </Button>
+        <div className="flex items-center gap-2">
+          {hasFilters && (
+            <Button
+              onClick={clearFilters}
+              variant="ghost"
+              size="sm"
+              className="text-muted-foreground hover:text-foreground"
+            >
+              <X className="h-4 w-4 mr-1" />
+              Clear filters
+            </Button>
+          )}
+          <Button
+            onClick={() => refetch()}
+            variant="outline"
+            size="sm"
+            disabled={isFetching}
+          >
+            <RefreshCw
+              className={`h-4 w-4 mr-2 ${isFetching ? 'animate-spin' : ''}`}
+            />
+            Refresh
+          </Button>
+        </div>
       </div>
+
       <div className="flex flex-wrap gap-4 items-center justify-between mb-4">
-        <SearchInput value={search} onChange={setSearch} />
-        <StoreSelect
-          stores={[
-            { id: 'store1', name: 'Store One' },
-            { id: 'store2', name: 'Store Two' },
-            // You can replace this with API data
-          ]}
-          value={storeId}
-          onChange={(value) => {
-            setStoreId(value);
-            setPage(1);
-          }}
-        />
-        <StatusFilters
-          value={status}
-          onChange={(value) => {
-            setStatus(value);
-            setPage(1);
-          }}
-        />
+        <div className="flex items-center gap-4 flex-1 min-w-[300px]">
+          <SearchInput value={search} onChange={setSearch} />
+          {hasFilters && (
+            <Button
+              onClick={clearFilters}
+              variant="ghost"
+              size="sm"
+              className="text-muted-foreground hover:text-foreground"
+            >
+              <X className="h-4 w-4" />
+            </Button>
+          )}
+        </div>
+        <div className="flex items-center gap-4">
+          <StoreSelect
+            // @ts-ignore
+            stores={getStores}
+            value={storeId}
+            onChange={(value) => {
+              setStoreId(value);
+              setPage(1);
+            }}
+          />
+          <StatusFilters
+            value={status}
+            onChange={(value) => {
+              setStatus(value);
+              setPage(1);
+            }}
+          />
+        </div>
       </div>
+
+      {hasFilters && (
+        <div className="flex items-center gap-2 flex-wrap">
+          {search && (
+            <Badge
+              variant="outline"
+              className="flex items-center gap-1 py-1 text-muted-foreground"
+            >
+              Search: {search}
+              <button
+                onClick={() => setSearch('')}
+                className="text-muted-foreground hover:text-foreground"
+              >
+                <X className="h-3 w-3" />
+              </button>
+            </Badge>
+          )}
+          {status && (
+            <Badge
+              variant="outline"
+              className="flex items-center gap-1 py-1 text-muted-foreground"
+            >
+              Status: {status}
+              <button
+                onClick={() => setStatus('')}
+                className="text-muted-foreground hover:text-foreground"
+              >
+                <X className="h-3 w-3" />
+              </button>
+            </Badge>
+          )}
+          {storeId && (
+            <Badge
+              variant="outline"
+              className="flex items-center gap-1 py-1 text-muted-foreground"
+            >
+              Store:{' '}
+              {getStores.find((s) => s._id === storeId)?.storeName || storeId}
+              <button
+                onClick={() => setStoreId('')}
+                className="text-muted-foreground hover:text-foreground"
+              >
+                <X className="h-3 w-3" />
+              </button>
+            </Badge>
+          )}
+        </div>
+      )}
 
       <div className="rounded-lg border bg-card shadow-sm overflow-hidden">
-        <Table className="text-sm w-full">
-          <TableHeader>
-            <TableRow>
-              <TableHead className="min-w-[200px] font-semibold text-foreground/80 bg-muted/30 py-4">
-                Order Info
-              </TableHead>
-              <TableHead className="min-w-[280px] font-semibold text-foreground/80 bg-muted/30 py-4">
-                Products
-              </TableHead>
-              <TableHead className="min-w-[160px] font-semibold text-foreground/80 bg-muted/30 py-4">
-                Customer
-              </TableHead>
-              <TableHead className="min-w-[140px] font-semibold text-foreground/80 bg-muted/30 py-4">
-                Shipping
-              </TableHead>
-              <TableHead className="min-w-[120px] font-semibold text-foreground/80 bg-muted/30 py-4">
-                Status
-              </TableHead>
-              <TableHead className="min-w-[140px] font-semibold text-foreground/80 bg-muted/30 py-4">
-                Tax
-              </TableHead>
-              <TableHead className="text-right min-w-[120px] font-semibold text-foreground/80 bg-muted/30 py-4">
-                Total
-              </TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {data.orders.map((order: Order) => (
-              <TableRow
-                key={order._id}
-                className="hover:bg-muted/30 transition-colors border-b border-border/30 group"
-              >
-                {/* Order Info */}
-                <TableCell>
-                  <div className="flex flex-col gap-2 py-2">
-                    <Badge
-                      variant="secondary"
-                      className="w-fit text-xs font-medium px-2 py-1 bg-blue-50 text-blue-700 border-blue-200"
-                    >
-                      Store: {order.storeId}
-                    </Badge>
-                    <span className="font-semibold text-foreground group-hover:text-primary transition-colors">
-                      {order.customerOrderId}
-                    </span>
-                    <p className="text-xs text-muted-foreground/70 font-medium">
-                      {formatDate(order.orderDate)}
-                    </p>
-                  </div>
-                </TableCell>
+        <div className="relative overflow-x-auto">
+          <Table className="text-sm w-full">
+            <TableHeader>
+              <TableRow>
+                <TableHead className="min-w-[200px] font-semibold text-foreground/80 bg-muted/30 py-4">
+                  Order Info
+                </TableHead>
+                <TableHead className="min-w-[280px] font-semibold text-foreground/80 bg-muted/30 py-4">
+                  Products
+                </TableHead>
+                <TableHead className="min-w-[160px] font-semibold text-foreground/80 bg-muted/30 py-4">
+                  Customer
+                </TableHead>
+                <TableHead className="min-w-[140px] font-semibold text-foreground/80 bg-muted/30 py-4">
+                  Shipping
+                </TableHead>
+                <TableHead className="min-w-[120px] font-semibold text-foreground/80 bg-muted/30 py-4">
+                  Status
+                </TableHead>
+                <TableHead className="min-w-[140px] font-semibold text-foreground/80 bg-muted/30 py-4">
+                  Tax
+                </TableHead>
+                <TableHead className="text-right min-w-[120px] font-semibold text-foreground/80 bg-muted/30 py-4">
+                  Total
+                </TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {data.orders.map((order: Order) => (
+                <TableRow
+                  key={order._id}
+                  className="hover:bg-muted/30 transition-colors border-b border-border/30 group"
+                >
+                  <TableCell>
+                    <div className="flex flex-col gap-2 py-2">
+                      <Badge
+                        variant="secondary"
+                        className="w-fit text-xs font-medium px-2 py-1 bg-blue-50 text-blue-700 border-blue-200"
+                      >
+                        Store: {order.storeId}
+                      </Badge>
+                      <span className="font-semibold text-foreground group-hover:text-primary transition-colors">
+                        {order.customerOrderId}
+                      </span>
+                      <p className="text-xs text-muted-foreground/70 font-medium">
+                        {formatDate(order.orderDate)}
+                      </p>
+                    </div>
+                  </TableCell>
 
-                {/* Products */}
-                <TableCell className="space-y-4 max-w-[280px] py-3 truncate">
-                  {order.products?.map((product) => (
-                    <div
-                      key={product._id}
-                      className="flex gap-3 p-2 rounded-md hover:bg-muted/20 transition-colors"
-                    >
-                      <div className="relative h-16 w-16 rounded-lg overflow-hidden border-2 border-border/20 shadow-sm flex-shrink-0">
-                        <Image
-                          src={
-                            product.imageUrl ||
-                            '/placeholder.svg?height=64&width=64'
-                          }
-                          alt={product.productName}
-                          fill
-                          className="object-cover"
-                          unoptimized
-                        />
-                      </div>
-                      <div className="flex-1 space-y-1 min-w-0">
-                        <Tooltip>
-                          <TooltipTrigger asChild>
-                            <p className="font-medium line-clamp-2 text-foreground group-hover:text-primary transition-colors text-sm truncate">
+                  <TableCell className="space-y-4 max-w-[280px] py-3 truncate">
+                    {order.products?.map((product) => (
+                      <div
+                        key={product._id}
+                        className="flex gap-3 p-2 rounded-md hover:bg-muted/20 transition-colors"
+                      >
+                        <div className="relative h-16 w-16 rounded-lg overflow-hidden border-2 border-border/20 shadow-sm flex-shrink-0">
+                          <Image
+                            src={
+                              product.imageUrl ||
+                              '/placeholder.svg?height=64&width=64'
+                            }
+                            alt={product.productName}
+                            fill
+                            className="object-cover"
+                            unoptimized
+                          />
+                        </div>
+                        <div className="flex-1 space-y-1 min-w-0">
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <p className="font-medium line-clamp-2 text-foreground group-hover:text-primary transition-colors text-sm truncate">
+                                {product.productName}
+                              </p>
+                            </TooltipTrigger>
+                            <TooltipContent className="w-80 text-balance text-justify leading-5">
                               {product.productName}
-                            </p>
-                          </TooltipTrigger>
-                          <TooltipContent className="w-80 text-balance text-justify leading-5">
-                            {product.productName}
-                          </TooltipContent>
-                        </Tooltip>
+                            </TooltipContent>
+                          </Tooltip>
 
-                        <p className="text-xs text-muted-foreground/80 font-mono bg-muted/30 px-2 py-1 rounded w-fit">
-                          SKU: {product.productSKU}
-                        </p>
-                        <div className="flex gap-3 flex-wrap text-xs">
-                          <span className=" font-medium bg-blue-50 text-blue-700 px-2 py-1 rounded">
-                            Qty: {product.quantity}
-                          </span>
-                          <span className="font-medium bg-green-50 text-green-700 px-2 py-1 rounded">
-                            Price: ${product.sellPrice}
-                          </span>
+                          <p className="text-xs text-muted-foreground/80 font-mono bg-muted/30 px-2 py-1 rounded w-fit">
+                            SKU: {product.productSKU}
+                          </p>
+                          <div className="flex gap-3 flex-wrap text-xs">
+                            <span className=" font-medium bg-blue-50 text-blue-700 px-2 py-1 rounded">
+                              Qty: {product.quantity}
+                            </span>
+                            <span className="font-medium bg-green-50 text-green-700 px-2 py-1 rounded">
+                              Price: ${product.sellPrice}
+                            </span>
+                          </div>
                         </div>
                       </div>
-                    </div>
-                  ))}
-                </TableCell>
+                    ))}
+                  </TableCell>
 
-                {/* Customer */}
-                <TableCell>
-                  <HoverCard>
-                    <HoverCardTrigger asChild>
-                      <span className="cursor-pointer font-medium hover:underline hover:text-primary transition-colors text-foreground">
-                        {order.customerName}
+                  <TableCell>
+                    <HoverCard>
+                      <HoverCardTrigger asChild>
+                        <span className="cursor-pointer font-medium hover:underline hover:text-primary transition-colors text-foreground">
+                          {order.customerName}
+                        </span>
+                      </HoverCardTrigger>
+                      <HoverCardContent className="w-72 p-4 bg-card border shadow-lg">
+                        <p className="text-sm font-semibold mb-2 text-foreground">
+                          Customer Details
+                        </p>
+                        <p className="text-sm text-muted-foreground mb-1">
+                          Name: {order.customerName}
+                        </p>
+                        <p className="text-sm text-muted-foreground mb-1 whitespace-pre-line mt-1">
+                          Address: {order.customerAddress}
+                        </p>
+                      </HoverCardContent>
+                    </HoverCard>
+                  </TableCell>
+
+                  <TableCell>
+                    <div className="flex flex-col gap-2 py-2">
+                      <Badge
+                        variant="outline"
+                        className="w-fit text-xs font-medium px-2 py-1 bg-purple-50 text-purple-700 border-purple-200"
+                      >
+                        {order.shipNodeType}
+                      </Badge>
+                      <span className="text-xs text-muted-foreground font-medium">
+                        Shipping: ${order.products?.[0]?.shipping || '0.00'}
                       </span>
-                    </HoverCardTrigger>
-                    <HoverCardContent className="w-72 p-4 bg-card border shadow-lg">
-                      <p className="text-sm font-semibold mb-2 text-foreground">
-                        Customer Details
-                      </p>
-                      <p className="text-sm text-muted-foreground mb-1">
-                        Name: {order.customerName}
-                      </p>
-                      <p className="text-sm text-muted-foreground mb-1 whitespace-pre-line mt-1">
-                        Address: {order.customerAddress}
-                      </p>
-                    </HoverCardContent>
-                  </HoverCard>
-                </TableCell>
+                    </div>
+                  </TableCell>
 
-                {/* Shipping */}
-                <TableCell>
-                  <div className="flex flex-col gap-2 py-2">
+                  <TableCell>
                     <Badge
-                      variant="outline"
-                      className="w-fit text-xs font-medium px-2 py-1 bg-purple-50 text-purple-700 border-purple-200"
+                      className={
+                        order.status === 'Delivered'
+                          ? 'capitalize text-xs px-3 py-1 bg-green-100 text-green-800 border-green-200 font-medium'
+                          : order.status === 'Shipped'
+                          ? 'capitalize text-xs px-3 py-1 bg-blue-100 text-blue-800 border-blue-200 font-medium'
+                          : order.status === 'Acknowledged'
+                          ? 'capitalize text-xs px-3 py-1 bg-orange-50 text-orange-700 border-orange-200 font-medium'
+                          : order.status === 'Pending'
+                          ? 'capitalize text-xs px-3 py-1 bg-yellow-50 text-yellow-700 border-yellow-200 font-medium'
+                          : 'capitalize text-xs px-3 py-1 bg-red-100 text-red-800 border-red-200 font-medium'
+                      }
                     >
-                      {order.shipNodeType}
+                      {order.status}
                     </Badge>
-                    <span className="text-xs text-muted-foreground font-medium">
-                      Shipping: ${order.products?.[0]?.shipping || '0.00'}
-                    </span>
-                  </div>
-                </TableCell>
+                  </TableCell>
 
-                {/* Status */}
-                <TableCell>
-                  <Badge
-                    className={
-                      order.status === 'Delivered'
-                        ? 'capitalize text-xs px-3 py-1 bg-green-100 text-green-800 border-green-200 font-medium'
-                        : order.status === 'Shipped'
-                        ? 'capitalize text-xs px-3 py-1 bg-blue-100 text-blue-800 border-blue-200 font-medium'
-                        : order.status === 'Acknowledged'
-                        ? 'capitalize text-xs px-3 py-1 bg-orange-50 text-orange-700 border-orange-200 font-medium'
-                        : order.status === 'Pending'
-                        ? 'capitalize text-xs px-3 py-1 bg-yellow-50 text-yellow-700 border-yellow-200 font-medium'
-                        : 'capitalize text-xs px-3 py-1 bg-red-100 text-red-800 border-red-200 font-medium'
-                    }
-                  >
-                    {order.status}
-                  </Badge>
-                </TableCell>
+                  <TableCell>
+                    <div className="flex flex-col gap-2 py-2">
+                      <span className="text-sm text-muted-foreground font-medium">
+                        Tax: ${order.products?.[0]?.tax || '0.00'}
+                      </span>
+                    </div>
+                  </TableCell>
 
-                {/* Tax */}
-                <TableCell>
-                  <div className="flex flex-col gap-2 py-2">
-                    <span className="text-sm text-muted-foreground font-medium">
-                      Tax: ${order.products?.[0]?.tax || '0.00'}
-                    </span>
-                  </div>
-                </TableCell>
-
-                {/* Total */}
-                <TableCell className="text-right">
-                  <div className="flex flex-col gap-2 items-end py-2">
-                    <span className="font-bold text-lg text-foreground">
-                      $
-                      {order.products
-                        .reduce(
-                          (total, product) =>
-                            total +
-                            (Number(product.sellPrice) || 0) +
-                            (Number(product.tax) || 0),
-                          0
-                        )
-                        .toFixed(2)}
-                    </span>
-                  </div>
-                </TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
+                  <TableCell className="text-right">
+                    <div className="flex flex-col gap-2 items-end py-2">
+                      <span className="font-bold text-lg text-foreground">
+                        $
+                        {order.products
+                          .reduce(
+                            (total, product) =>
+                              total +
+                              (Number(product.sellPrice) || 0) +
+                              (Number(product.tax) || 0),
+                            0
+                          )
+                          .toFixed(2)}
+                      </span>
+                    </div>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </div>
       </div>
 
-      {/* Pagination Controls */}
-      <div className="flex items-center justify-between px-2">
+      <div className="flex flex-col sm:flex-row items-center justify-between gap-4 px-2">
         <div className="flex items-center space-x-2">
           <p className="text-sm font-medium">Rows per page</p>
           <Select value={limit.toString()} onValueChange={handleLimitChange}>
@@ -509,9 +593,7 @@ export function OrdersTable() {
 
         <div className="flex items-center space-x-2">
           <p className="text-sm font-medium">
-            {data.total === 0
-              ? 'No orders'
-              : `${startIndex}-${endIndex} of ${data.total}`}
+            {startIndex}-{endIndex} of {data.total}
           </p>
         </div>
       </div>
@@ -567,7 +649,7 @@ function StatusFilters({ value, onChange }: StatusFilterProps) {
 }
 
 interface StoreSelectProps {
-  stores: { id: string; name: string }[];
+  stores: Store[];
   value: string;
   onChange: (value: string) => void;
 }
@@ -579,9 +661,9 @@ function StoreSelect({ stores, value, onChange }: StoreSelectProps) {
         <SelectValue placeholder="Select Store" />
       </SelectTrigger>
       <SelectContent>
-        {stores.map((store) => (
-          <SelectItem key={store.id} value={store.id}>
-            {store.name}
+        {stores.map((store: Store) => (
+          <SelectItem key={store._id} value={store.storeId}>
+            {store.storeName}
           </SelectItem>
         ))}
       </SelectContent>

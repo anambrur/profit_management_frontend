@@ -1,4 +1,5 @@
 // stores/useAuthStore.ts
+import { useEffect, useState } from 'react';
 import { create } from 'zustand';
 import { createJSONStorage, persist } from 'zustand/middleware';
 
@@ -91,10 +92,24 @@ export const useAuthStore = create<AuthState>()(
       partialize: (state) => ({
         user: state.user,
         token: state.token,
+        allowStores: state.user?.allowedStores,
       }),
     }
   )
 );
+
+export const useAllowedStores = () => {
+  const [hydrated, setHydrated] = useState(false);
+  const allowedStores = useAuthStore(
+    (state) => state.user?.allowedStores || []
+  );
+
+  useEffect(() => {
+    setHydrated(true);
+  }, []);
+
+  return hydrated ? allowedStores : [];
+};
 
 // Optional: Create hooks for common operations
 export const useUser = () => useAuthStore((state) => state.user);

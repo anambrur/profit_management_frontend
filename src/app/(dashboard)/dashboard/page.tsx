@@ -336,30 +336,6 @@ export default function Component() {
           </Card>
         )}
       </div>
-
-      {salesData.thisMonth.orderAnalysis.orders.length > 0 && (
-        <Card>
-          <CardHeader>
-            <CardTitle>This Month's Order Details</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-2">
-              {salesData.thisMonth.orderAnalysis.orders.map((order) => (
-                <div
-                  key={order.orderId}
-                  className="flex justify-between items-center p-3 bg-muted/50 rounded-lg"
-                >
-                  <span className="font-mono text-sm">#{order.orderId}</span>
-                  <div className="flex gap-4 text-sm">
-                    <span>Profit: {formatCurrency(order.profit)}</span>
-                    <span>Margin: {formatPercentage(order.margin)}</span>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
-      )}
     </div>
   );
 }

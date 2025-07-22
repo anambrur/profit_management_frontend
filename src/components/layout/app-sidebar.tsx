@@ -28,7 +28,7 @@ const navigationItems = [
     title: 'Dashboard',
     url: '/dashboard',
     icon: Home,
-    requiredPermissions: [], // No permissions required for dashboard
+    requiredPermissions: ['profit-analyzer:view'], // No permissions required for dashboard
   },
   {
     title: 'Orders',
@@ -104,7 +104,30 @@ export function AppSidebar() {
           <SidebarGroupContent>
             <SidebarMenu>
               {navigationItems.map((item) => {
-                // Skip if user doesn't have required permissions
+                if (item.title === 'Dashboard') {
+                  if (!hasPermission('dashboard:view') && !isAdmin) {
+                    return null;
+                  }
+                  return (
+                    <SidebarMenuItem key={item.title}>
+                      <SidebarMenuButton
+                        asChild
+                        isActive={pathname === item.url}
+                        className={cn(
+                          'w-full justify-start gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors',
+                          pathname === item.url
+                            ? 'bg-gray-950 text-primary-foreground dark:bg-gray-950 dark:text-white'
+                            : 'text-gray-700 hover:bg-gray-100 hover:text-gray-900 dark:text-gray-300 dark:hover:bg-gray-800 dark:hover:text-gray-100'
+                        )}
+                      >
+                        <Link href={item.url}>
+                          <item.icon className="h-4 w-4" />
+                          <span>{item.title}</span>
+                        </Link>
+                      </SidebarMenuButton>
+                    </SidebarMenuItem>
+                  );
+                }
                 if (
                   item.requiredPermissions.length > 0 &&
                   !hasAnyPermission(item.requiredPermissions)

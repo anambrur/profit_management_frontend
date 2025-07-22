@@ -75,11 +75,23 @@ interface UserData {
   username: string;
   phone: string;
   address: string;
-  role: 'admin' | 'manager' | 'user';
+  roles: Role[];
   status: 'active' | 'inactive';
   profileImage?: string;
-  createdAt: string;
   lastLogin?: string;
+  allowedStores: string[]; // store IDs
+  createdAt: string;
+  updatedAt: string;
+  __v: number;
+}
+
+interface Role {
+  _id: string;
+  name: string;
+  permissions: string[]; // permission IDs
+  createdAt: string;
+  updatedAt: string;
+  __v: number;
 }
 
 type PageView = 'list' | 'add' | 'edit';
@@ -117,7 +129,8 @@ export default function UsersListPage() {
       const matchesStatus =
         statusFilter === 'all' || user.status === statusFilter;
 
-      const matchesRole = roleFilter === 'all' || user.role === roleFilter;
+      const matchesRole =
+        roleFilter === 'all' || user.roles[0].name === roleFilter;
 
       return matchesSearch && matchesStatus && matchesRole;
     });
@@ -128,7 +141,7 @@ export default function UsersListPage() {
       total: users.length,
       active: users.filter((u) => u.status === 'active').length,
       inactive: users.filter((u) => u.status === 'inactive').length,
-      admins: users.filter((u) => u.role === 'admin').length,
+      admins: users.filter((u) => u.roles[0].name === 'admin').length,
     }),
     [users]
   );
@@ -467,7 +480,7 @@ function UsersTable({
             <TableBody>
               {users.map((user) => {
                 const statusProps = getStatusBadgeProps(user.status);
-                const roleProps = getRoleBadgeProps(user.role);
+                const roleProps = getRoleBadgeProps(user.roles[0].name);
 
                 return (
                   <TableRow key={user._id} className="hover:bg-gray-50">
@@ -509,7 +522,9 @@ function UsersTable({
                     <TableCell>
                       <Badge className={roleProps.className}>
                         {roleProps.icon}
-                        <span className="ml-1 capitalize">{user.role}</span>
+                        <span className="ml-1 capitalize">
+                          {user.roles[0].name}
+                        </span>
                       </Badge>
                     </TableCell>
                     <TableCell>
@@ -657,9 +672,9 @@ function EditUserPage({
     <div className="min-h-screen bg-gray-50 py-8 px-4">
       <div className="max-w-4xl mx-auto">
         <UserPageEdit
-          user={user as any}
-          onBack={onBack}
-          onUserUpdated={handleUserUpdated}
+          userId={user._id}
+          onSuccess={handleUserUpdated}
+          onCancel={onBack}
         />
       </div>
     </div>
