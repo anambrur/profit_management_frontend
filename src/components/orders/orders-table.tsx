@@ -81,9 +81,6 @@ export function OrdersTable() {
   const [status, setStatus] = useState('');
   const [storeId, setStoreId] = useState('');
   const getStores = useAllowedStores();
-  console.log('status', status);
-  console.log('storeId', storeId);
-  console.log('search', search);
   const { data, isLoading, error, refetch, isFetching } = useOrders({
     page,
     limit,

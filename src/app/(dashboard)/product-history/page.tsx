@@ -103,7 +103,7 @@ export const getProducts = async ({
   search,
   storeId,
   page = 1,
-  limit = 20,
+  limit = 10,
 }: {
   search?: string;
   storeId?: string;
@@ -151,7 +151,7 @@ export default function InventoryPage() {
   const [pagination, setPagination] = useState<PaginationInfo>({
     total: 0,
     page: 1,
-    limit: 20,
+    limit: 10,
     totalPages: 0,
   });
 

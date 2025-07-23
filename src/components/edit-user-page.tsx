@@ -1055,6 +1055,7 @@ export default function UserPageEdit({
         <StoreSelectionDialog
           isOpen={isStoreDialogOpen}
           onClose={() => setIsStoreDialogOpen(false)}
+          // @ts-ignore
           stores={stores}
           onAssign={handleAssignStores}
           defaultSelected={assignedStores}

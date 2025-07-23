@@ -16,8 +16,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Store, useStoresData } from '@/hooks/useStoreData';
 import axiosInstance from '@/lib/axiosInstance';
+import { useAllowedStores } from '@/store/useAuthStore';
 import { useQuery } from '@tanstack/react-query';
 import { format } from 'date-fns';
 import {
@@ -81,7 +81,7 @@ export default function Component() {
   const [startDate, setStartDate] = useState<Date>();
   const [endDate, setEndDate] = useState<Date>();
   const [storeId, setStoreId] = useState<string>('');
-  const { data: stores } = useStoresData();
+  const stores = useAllowedStores();
   const { data, isLoading, isError } = useQuery({
     queryKey: ['profit'],
     queryFn: async (): Promise<DashboardResponse> => {
@@ -227,7 +227,7 @@ export default function Component() {
               <SelectValue placeholder="Select Store" />
             </SelectTrigger>
             <SelectContent>
-              {stores?.map((store: Store) => (
+              {stores?.map((store) => (
                 <SelectItem key={store.storeId + 1} value={store.storeId}>
                   {store.storeName}
                 </SelectItem>
