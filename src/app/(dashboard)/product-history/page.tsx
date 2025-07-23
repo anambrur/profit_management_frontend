@@ -238,7 +238,7 @@ export default function InventoryPage() {
         <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
           {/* 🔍 Search Filter */}
           <SearchFilter search={search} onSearchChange={handleSearchChange} />
-          <UploadDialog  />
+          <UploadDialog />
         </div>
 
         {/* 📦 Product History Table with Pagination */}

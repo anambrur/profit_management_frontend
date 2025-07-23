@@ -1203,7 +1203,7 @@ export function ProductHistoryTable({
                     <TableCell className="py-6">
                       <div className="flex items-center gap-2 group/cost">
                         <span className="font-semibold text-green-700 bg-green-50 px-2 py-1 rounded-md">
-                          ${Math.ceil(Number(product.costOfPrice)) || 0}
+                          ${Number(product.costOfPrice) || 0}
                         </span>
                         <EditPopover
                           value={product.costOfPrice}
@@ -1220,7 +1220,7 @@ export function ProductHistoryTable({
                     {/* Sell Price */}
                     <TableCell className="py-6">
                       <span className="font-semibold text-blue-700 bg-blue-50 px-2 py-1 rounded-md">
-                        ${Math.ceil(Number(product.sellPrice)) || 0}
+                        ${Number(product.sellPrice) || 0}
                       </span>
                     </TableCell>
 
