@@ -43,7 +43,7 @@ const fetchOrders = async ({
 // ✅ Main Hook
 export function useOrders({
   page = 1,
-  limit = 20,
+  limit = 10,
   search = '',
   status = '',
   storeId = '',

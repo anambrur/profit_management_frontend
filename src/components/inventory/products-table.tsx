@@ -151,7 +151,11 @@ export function ProductsTable({
   }
 
   if (isLoading) {
-    return <TableSkeleton />;
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
+      </div>
+    );
   }
 
   if (!data || !data.success || data.data.length === 0) {
@@ -207,7 +211,9 @@ export function ProductsTable({
         <Table className="min-w-full table-auto  overflow-scroll">
           <TableHeader className="sticky left-0 z-20 bg-card min-w-[280px] border-r">
             <TableRow>
-              <TableHead className="min-w-[280px] sticky left-0 z-20 bg-card">Product</TableHead>
+              <TableHead className="min-w-[280px] sticky left-0 z-20 bg-card">
+                Product
+              </TableHead>
               <TableHead className="min-w-[140px]">Category</TableHead>
               <TableHead className="min-w-[120px]">SKU</TableHead>
               <TableHead className="min-w-[160px]">Identifiers</TableHead>

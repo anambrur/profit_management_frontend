@@ -14,7 +14,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Skeleton } from '@/components/ui/skeleton';
 import {
   Table,
   TableBody,
@@ -149,52 +148,8 @@ export function OrdersTable() {
 
   if (isLoading) {
     return (
-      <div className="space-y-4">
-        <div className="rounded-lg border bg-card shadow-sm overflow-hidden">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                {[
-                  'Order Info',
-                  'Status',
-                  'Customer',
-                  'Shipping',
-                  'Products',
-                  'Total',
-                ].map((h, i) => (
-                  <TableHead
-                    key={i}
-                    className="font-semibold text-foreground/80 bg-muted/30 py-4"
-                  >
-                    {h}
-                  </TableHead>
-                ))}
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {Array.from({ length: 10 }).map((_, i) => (
-                <TableRow key={i} className="border-b border-border/50">
-                  {Array.from({ length: 6 }).map((_, j) => (
-                    <TableCell key={j}>
-                      <Skeleton className="h-16 w-full" />
-                    </TableCell>
-                  ))}
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </div>
-        <div className="flex items-center justify-between">
-          <Skeleton className="h-8 w-32" />
-          <div className="flex items-center space-x-2">
-            <Skeleton className="h-8 w-8" />
-            <Skeleton className="h-8 w-8" />
-            <Skeleton className="h-8 w-16" />
-            <Skeleton className="h-8 w-8" />
-            <Skeleton className="h-8 w-8" />
-          </div>
-          <Skeleton className="h-8 w-24" />
-        </div>
+      <div className="flex items-center justify-center h-64">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
       </div>
     );
   }

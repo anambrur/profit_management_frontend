@@ -2,7 +2,7 @@
 
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import {
@@ -17,7 +17,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Skeleton } from '@/components/ui/skeleton';
 import {
   Table,
   TableBody,
@@ -720,80 +719,9 @@ export function ProductHistoryTable({
 
   if (isLoading) {
     return (
-      <Card className="w-full shadow-lg border-0 bg-gradient-to-br from-white to-slate-50">
-        <CardHeader className="pb-4 border-b bg-gradient-to-r from-slate-50 to-gray-50">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div className="p-2 rounded-lg">
-                <Skeleton className="h-5 w-5" />
-              </div>
-              <div>
-                <Skeleton className="h-6 w-48 mb-1" />
-                <Skeleton className="h-4 w-32" />
-              </div>
-            </div>
-            <div className="flex items-center gap-2">
-              <Skeleton className="h-9 w-24" />
-              <Skeleton className="h-9 w-24" />
-              <Skeleton className="h-9 w-9" />
-            </div>
-          </div>
-        </CardHeader>
-        <CardContent className="p-0">
-          <div className="overflow-x-auto">
-            <Table>
-              <TableHeader>
-                <TableRow className="bg-gradient-to-r from-slate-100 to-gray-100 border-b-2">
-                  {[
-                    'Product',
-                    'Order ID',
-                    'Supplier',
-                    'UPC',
-                    'Card',
-                    'Purchase',
-                    'Received',
-                    'Lost',
-                    'Sent to WFS',
-                    'Remaining',
-                    'Cost Price',
-                    'Sell Price',
-                    'Total Cost',
-                    'WFS Cost',
-                    'Remaining Price',
-                    'Email',
-                    'Status',
-                    'Date & Time',
-                    'Actions',
-                  ].map((title, index) => (
-                    <TableHead
-                      key={index}
-                      className="font-semibold text-slate-700 py-4"
-                    >
-                      <Skeleton className="h-4 w-full" />
-                    </TableHead>
-                  ))}
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {Array.from({ length: 8 }).map((_, i) => (
-                  <TableRow key={i} className="border-b border-slate-100">
-                    {Array.from({ length: 18 }).map((_, j) => (
-                      <TableCell key={j} className="py-6">
-                        <Skeleton className="h-4 w-full" />
-                      </TableCell>
-                    ))}
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </div>
-          <PaginationControls
-            pagination={pagination}
-            onPageChange={onPageChange}
-            onLimitChange={onLimitChange}
-          />
-        </CardContent>
-      </Card>
+      <div className="flex items-center justify-center h-64">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
+      </div>
     );
   }
 

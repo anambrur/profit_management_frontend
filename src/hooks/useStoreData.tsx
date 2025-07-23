@@ -2,7 +2,7 @@ import axiosInstance from '@/lib/axiosInstance';
 import { useQuery } from '@tanstack/react-query';
 
 export interface Store {
-  _id: Key | null | undefined;
+  _id: string | number | null | undefined;
   storeId: string;
   storeName: string;
   storeEmail: string;
