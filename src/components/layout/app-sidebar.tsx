@@ -105,7 +105,7 @@ export function AppSidebar() {
             <SidebarMenu>
               {navigationItems.map((item) => {
                 if (item.title === 'Dashboard') {
-                  if (!hasPermission('dashboard:view') && !isAdmin) {
+                  if (!hasPermission('profit-analyzer:view') && !isAdmin) {
                     return null;
                   }
                   return (

@@ -9,12 +9,11 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { Input } from '@/components/ui/input';
 import { SidebarTrigger } from '@/components/ui/sidebar';
 
 import axiosInstance from '@/lib/axiosInstance';
 import { useAuthStore } from '@/store/useAuthStore';
-import { Search, User } from 'lucide-react';
+import { User } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import toast from 'react-hot-toast';
@@ -23,55 +22,42 @@ import NotificationPanel from '../notification-panel';
 export function Header() {
   const router = useRouter();
   const { user, setUser } = useAuthStore();
+
   const logOutUser = async () => {
     try {
       await axiosInstance.post(
         '/api/users/logout',
         {},
-        { withCredentials: true } // ✅ send cookie!
+        { withCredentials: true }
       );
-
-      toast.success('Logout successfully');
-      setUser(null); // clear Zustand or context
+      toast.success('Logout successful');
+      setUser(null, null);
       router.push('/');
     } catch (error) {
       toast.error('Logout failed');
     }
   };
+
   return (
-    <header className="flex h-17 items-center gap-4 border-b border-gray-200 bg-white px-6 dark:bg-gray-900 dark:border-gray-800 sticky top-0 z-10">
+    <header className="sticky top-0 z-10 flex h-17 items-center gap-4 border-b border-gray-200 bg-white px-6 dark:border-gray-800 dark:bg-gray-900">
+      {/* Sidebar for mobile */}
       <SidebarTrigger className="md:hidden" />
 
-      {/* Search */}
-      <div className="flex-1 w-full">
-        <div className="relative">
-          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400 dark:text-gray-500" />
-          <Input
-            placeholder="Search orders, products, customers..."
-            className="pl-10 bg-gray-50 border-gray-200 focus:bg-white dark:bg-gray-900 dark:border-gray-700 dark:focus:bg-gray-800 dark:text-white dark:placeholder-gray-400"
-          />
-        </div>
-      </div>
+      {/* Notification + User Menu */}
+      <div className="ml-auto flex items-center gap-2">
+        <NotificationPanel />
 
-      <div className="flex items-center gap-2">
-        {/* Theme Toggle */}
-        <div className="flex items-center gap-x-2">
-          {/* <ToggleTheme /> */}
-          {/* Notifications */}
-          <NotificationPanel />
-        </div>
-
-        {/* User Menu */}
+        {/* User Dropdown */}
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button
               variant="ghost"
               className="flex items-center gap-2 hover:bg-transparent dark:hover:bg-gray-800"
             >
-              <div className="h-8 w-8 rounded-full bg-primary flex items-center justify-center dark:bg-primary">
+              <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary dark:bg-primary">
                 <User className="h-4 w-4 text-primary-foreground" />
               </div>
-              <div className="hidden md:block text-left">
+              <div className="hidden text-left md:block">
                 <div className="text-sm font-medium dark:text-gray-100">
                   {user?.name || 'John Doe'}
                 </div>
@@ -81,20 +67,23 @@ export function Header() {
               </div>
             </Button>
           </DropdownMenuTrigger>
+
           <DropdownMenuContent
             align="end"
-            className="w-56 dark:bg-gray-800 dark:border-gray-700"
+            className="w-56 dark:border-gray-700 dark:bg-gray-800"
           >
             <DropdownMenuLabel className="dark:text-gray-200">
               My Account
             </DropdownMenuLabel>
             <DropdownMenuSeparator className="dark:bg-gray-700" />
-            <DropdownMenuItem className="dark:hover:bg-gray-700 dark:text-gray-200">
-              <Link href={'/profile'} className="flex items-center">
-                <User className="mr-2 h-4 w-4 dark:text-gray-300" />
+
+            <Link href="/profile" passHref>
+              <DropdownMenuItem className="flex items-center gap-2 dark:text-gray-200 dark:hover:bg-gray-700">
+                <User className="h-4 w-4 text-muted-foreground dark:text-gray-300" />
                 Profile
-              </Link>
-            </DropdownMenuItem>
+              </DropdownMenuItem>
+            </Link>
+
             <DropdownMenuSeparator className="dark:bg-gray-700" />
             <DropdownMenuItem
               onClick={logOutUser}
