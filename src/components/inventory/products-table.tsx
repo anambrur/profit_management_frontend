@@ -33,11 +33,9 @@ import {
   ChevronRight,
   ChevronsLeft,
   ChevronsRight,
-  Eye,
   RefreshCw,
   Search,
 } from 'lucide-react';
-import Link from 'next/link';
 import { useCallback, useEffect, useState } from 'react';
 import { useDebounce } from 'use-debounce';
 
@@ -48,7 +46,7 @@ interface ProductTableProps {
 
 export function ProductsTable({
   initialPage = 1,
-  initialLimit = 50,
+  initialLimit = 10,
 }: ProductTableProps) {
   const [page, setPage] = useState(initialPage);
   const [limit, setLimit] = useState(initialLimit);
@@ -532,14 +530,6 @@ function ProductRow({
             {product.publishedStatus}
           </Badge>
         </div>
-      </TableCell>
-
-      <TableCell>
-        <Link href={`/product-history/product-history-list/${product._id}`}>
-          <Button size="icon" variant="outline">
-            <Eye className="h-4 w-4" />
-          </Button>
-        </Link>
       </TableCell>
     </TableRow>
   );
