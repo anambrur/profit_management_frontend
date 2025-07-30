@@ -17,6 +17,7 @@ export interface Product {
   available: number;
   publishedStatus: 'PUBLISHED' | 'UNPUBLISHED' | 'SYSTEM_PROBLEM';
   lifecycleStatus: 'ACTIVE' | 'RETIRED';
+  storeName: string;
   __v: number;
   createdAt: string;
   updatedAt: string;
@@ -40,7 +41,7 @@ interface UseProductsParams {
   limit: number;
   search?: string;
   availability?: string;
-  storeId?: string;
+  storeId?: string[];
 }
 
 const fetchProducts = async (
@@ -61,12 +62,8 @@ const fetchProducts = async (
     ) {
       searchParams.append('availability', params.availability);
     }
-    if (
-      params.storeId &&
-      params.storeId !== '' &&
-      params.storeId !== 'All Marts'
-    ) {
-      searchParams.append('mart', params.storeId);
+    if (params.storeId && params.storeId.length > 0) {
+      searchParams.append('storeIds', params.storeId.join(','));
     }
 
     const response = await axiosInstance.get(
@@ -86,7 +83,7 @@ export function useProducts(params: Partial<UseProductsParams> = {}) {
     limit = 50,
     search = '',
     availability = '',
-    storeId = '',
+    storeId = [],
   } = params;
 
   return useQuery({
@@ -105,7 +102,7 @@ export function usePrefetchProducts() {
     limit: number,
     search?: string,
     availability?: string,
-    storeId?: string
+    storeId?: string[]
   ) => {
     queryClient.prefetchQuery({
       queryKey: [
