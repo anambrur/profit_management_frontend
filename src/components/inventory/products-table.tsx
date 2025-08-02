@@ -10,7 +10,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Skeleton } from '@/components/ui/skeleton';
 import {
   Table,
   TableBody,
@@ -38,6 +37,8 @@ import {
 } from 'lucide-react';
 import { useCallback, useEffect, useState } from 'react';
 import { useDebounce } from 'use-debounce';
+import { Checkbox } from '../ui/checkbox';
+import { Popover, PopoverContent, PopoverTrigger } from '../ui/popover';
 
 interface ProductTableProps {
   initialPage?: number;
@@ -52,7 +53,7 @@ export function ProductsTable({
   const [limit, setLimit] = useState(initialLimit);
   const [search, setSearch] = useState('');
   const [availability, setAvailability] = useState('All Stock');
-  const [storeId, setStoreId] = useState('All Marts');
+  const [storeId, setStoreId] = useState<string[]>([]);
 
   // Debounce search input to reduce unnecessary API calls
   const [debouncedSearch] = useDebounce(search, 500);
@@ -63,9 +64,8 @@ export function ProductsTable({
     limit,
     search: debouncedSearch,
     availability: availability === 'All Stock' ? undefined : availability,
-    storeId: storeId === 'All Marts' ? undefined : storeId,
+    storeId: storeId.length > 0 ? storeId : undefined,
   });
-
   const { prefetchNextPage } = usePrefetchProducts();
 
   // Prefetch next page when approaching the end of current data
@@ -129,7 +129,7 @@ export function ProductsTable({
     setPage(1);
   }, []);
 
-  const handleMartChange = useCallback((value: string) => {
+  const handleMartChange = useCallback((value: string[]) => {
     setStoreId(value);
     setPage(1);
   }, []);
@@ -251,68 +251,6 @@ export function ProductsTable({
   );
 }
 
-// Extracted component for table skeleton
-function TableSkeleton() {
-  return (
-    <div className="space-y-4">
-      <div className="flex flex-col sm:flex-row gap-4">
-        <Skeleton className="h-10 flex-1" />
-        <Skeleton className="h-10 w-40" />
-        <Skeleton className="h-10 w-40" />
-      </div>
-
-      <div className="rounded-lg border bg-card shadow-sm overflow-hidden">
-        <Table>
-          <TableHeader>
-            <TableRow>
-              {[
-                'Product',
-                'Category',
-                'SKU',
-                'Identifiers',
-                'Stock',
-                'Inventory',
-                'Condition',
-              ].map((h) => (
-                <TableHead key={h} className="py-4">
-                  {h}
-                </TableHead>
-              ))}
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {Array(10)
-              .fill(0)
-              .map((_, i) => (
-                <TableRow key={i}>
-                  {Array(7)
-                    .fill(0)
-                    .map((_, j) => (
-                      <TableCell key={j}>
-                        <Skeleton className="h-16 w-full" />
-                      </TableCell>
-                    ))}
-                </TableRow>
-              ))}
-          </TableBody>
-        </Table>
-      </div>
-
-      <div className="flex items-center justify-between">
-        <Skeleton className="h-8 w-32" />
-        <div className="flex items-center space-x-2">
-          <Skeleton className="h-8 w-8" />
-          <Skeleton className="h-8 w-8" />
-          <Skeleton className="h-8 w-16" />
-          <Skeleton className="h-8 w-8" />
-          <Skeleton className="h-8 w-8" />
-        </div>
-        <Skeleton className="h-8 w-24" />
-      </div>
-    </div>
-  );
-}
-
 // Extracted component for table header
 function TableHeaderSection({
   isFetching,
@@ -361,8 +299,8 @@ function TableFilters({
   onSearchChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
   availability: string;
   onAvailabilityChange: (value: string) => void;
-  storeId: string;
-  onMartChange: (value: string) => void;
+  storeId: string[];
+  onMartChange: (value: string[]) => void;
   stores?: Store[];
 }) {
   return (
@@ -386,19 +324,37 @@ function TableFilters({
           <SelectItem value="Out_of_stock">Out of Stock</SelectItem>
         </SelectContent>
       </Select>
-      <Select value={storeId} onValueChange={onMartChange}>
-        <SelectTrigger className="w-40">
-          <SelectValue placeholder="All Marts" />
-        </SelectTrigger>
-        <SelectContent>
-          <SelectItem value="All Marts">All Marts</SelectItem>
-          {stores?.map((store) => (
-            <SelectItem key={store.storeId} value={store.storeId}>
-              {store.storeName}
-            </SelectItem>
-          ))}
-        </SelectContent>
-      </Select>
+      <Popover>
+        <PopoverTrigger asChild>
+          <Button variant="outline" className="w-40 justify-start">
+            {storeId.length > 0 ? `${storeId.length} Mart(s)` : 'Select Marts'}
+          </Button>
+        </PopoverTrigger>
+        <PopoverContent className="w-80" align="end">
+          <div className="flex flex-col gap-2 max-h-60 overflow-y-auto">
+            {stores?.map((store) => (
+              <label
+                key={store.storeId}
+                className="flex items-center gap-2 cursor-pointer"
+              >
+                <Checkbox
+                  checked={storeId.includes(store.storeId)}
+                  onCheckedChange={(checked) => {
+                    if (checked) {
+                      onMartChange([...storeId, store.storeId]);
+                    } else {
+                      onMartChange(
+                        storeId.filter((id) => id !== store.storeId)
+                      );
+                    }
+                  }}
+                />
+                <span>{store.storeName}</span>
+              </label>
+            ))}
+          </div>
+        </PopoverContent>
+      </Popover>
     </div>
   );
 }
@@ -429,7 +385,7 @@ function ProductRow({
                   variant="secondary"
                   className="mb-2 text-xs font-medium px-2 py-1 bg-blue-50 text-blue-700 border-blue-200"
                 >
-                  {product.mart}
+                  {product.storeName}
                 </Badge>
                 <p className="truncate font-medium text-foreground group-hover:text-primary transition-colors">
                   {product.productName}
@@ -491,10 +447,10 @@ function ProductRow({
 
       <TableCell>
         <div className="flex items-center gap-y-1 flex-col">
-          <p className="text-xs text-muted-foreground">
+          {/* <p className="text-xs text-muted-foreground">
             <span className="font-medium">On Hand:</span>{' '}
             <span className="text-foreground font-bold">{product.onHand}</span>
-          </p>
+          </p> */}
           <p className="text-xs text-muted-foreground">
             <span className="font-medium">Available:</span>{' '}
             <span className="text-foreground font-bold">

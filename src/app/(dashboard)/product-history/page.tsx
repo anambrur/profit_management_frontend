@@ -147,7 +147,7 @@ export const getProducts = async ({
 
 export default function InventoryPage() {
   const [search, setSearch] = useState('');
-  const [storeId, setStoreId] = useState('');
+  const [storeIds, setStoreIds] = useState<string[]>([]);
   const [pagination, setPagination] = useState<PaginationInfo>({
     total: 0,
     page: 1,
@@ -160,14 +160,14 @@ export default function InventoryPage() {
     queryKey: [
       'productsHistory',
       search,
-      storeId,
+      storeIds,
       pagination.page,
       pagination.limit,
     ],
     queryFn: () =>
       getProducts({
         search,
-        storeId,
+        storeId: storeIds.join(','),
         page: pagination.page,
         limit: pagination.limit,
       }),
@@ -209,8 +209,8 @@ export default function InventoryPage() {
   };
 
   // ✅ Handle store filter changes (reset to first page)
-  const handleStoreChange = (newStoreId: string) => {
-    setStoreId(newStoreId);
+  const handleStoreChange = (newStoreIds: string[]) => {
+    setStoreIds(newStoreIds);
     setPagination((prev) => ({ ...prev, page: 1 }));
   };
 

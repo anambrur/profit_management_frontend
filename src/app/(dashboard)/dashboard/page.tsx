@@ -9,13 +9,6 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from '@/components/ui/popover';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
 import axiosInstance from '@/lib/axiosInstance';
 import { useAllowedStores } from '@/store/useAuthStore';
 import { useQuery } from '@tanstack/react-query';
@@ -80,8 +73,9 @@ export interface DashboardResponse {
 export default function Component() {
   const [startDate, setStartDate] = useState<Date>();
   const [endDate, setEndDate] = useState<Date>();
-  const [storeId, setStoreId] = useState<string>('');
+  const [storeIds, setStoreIds] = useState<string[]>([]);
   const stores = useAllowedStores();
+
   const { data, isLoading, isError } = useQuery({
     queryKey: ['profit'],
     queryFn: async (): Promise<DashboardResponse> => {
@@ -96,13 +90,13 @@ export default function Component() {
     isLoading: isCustomLoading,
     refetch: refetchCustomData, 
   } = useQuery({
-    queryKey: ['customProfit', startDate, endDate, storeId],
+    queryKey: ['customProfit', startDate, endDate, storeIds],
     queryFn: async () => {
       const res = await axiosInstance.get('/api/profits/get-all-profits', {
         params: {
           startDate: startDate?.toISOString(),
           endDate: endDate?.toISOString(),
-          storeId: storeId || undefined,
+          storeId: storeIds.join(',') || undefined,
         },
       });
       return res.data?.data?.custom;
@@ -115,7 +109,7 @@ export default function Component() {
   const handleClearFilters = () => {
     setStartDate(undefined);
     setEndDate(undefined);
-    setStoreId('');
+    setStoreIds([]);
   };
 
   const formatCurrency = (amount: string) =>
@@ -151,32 +145,42 @@ export default function Component() {
           <div className="grid grid-cols-2 gap-2 text-xs">
             <div className="space-y-1">
               <div className="flex justify-between">
-                <span className="text-muted-foreground">Cost:</span>
-                <span>{formatCurrency(data.summary.cost)}</span>
+                <span className="text-muted-foreground font-bold">Cost:</span>
+                <span className="font-bold">
+                  {formatCurrency(data.summary.cost)}
+                </span>
               </div>
               <div className="flex justify-between">
-                <span className="text-muted-foreground">Fees:</span>
-                <span>{formatCurrency(data.summary.fees)}</span>
+                <span className="text-muted-foreground font-bold">Fees:</span>
+                <span className="font-bold">
+                  {formatCurrency(data.summary.fees)}
+                </span>
               </div>
               <div className="flex justify-between">
-                <span className="text-muted-foreground">Taxes:</span>
-                <span>{formatCurrency(data.summary.taxes)}</span>
+                <span className="text-muted-foreground font-bold">Taxes:</span>
+                <span className="font-bold">
+                  {formatCurrency(data.summary.taxes)}
+                </span>
               </div>
             </div>
             <div className="space-y-1">
               <div className="flex justify-between">
-                <span className="text-muted-foreground">Shipping:</span>
-                <span>{formatCurrency(data.summary.shipping)}</span>
+                <span className="text-muted-foreground font-bold">
+                  Shipping:
+                </span>
+                <span className="font-bold">
+                  {formatCurrency(data.summary.shipping)}
+                </span>
               </div>
               <div className="flex justify-between">
-                <span className="text-muted-foreground">Profit:</span>
-                <span className="font-medium">
+                <span className="text-muted-foreground font-bold">Profit:</span>
+                <span className="font-bold">
                   {formatCurrency(data.summary.profit)}
                 </span>
               </div>
               <div className="flex justify-between">
-                <span className="text-muted-foreground">Margin:</span>
-                <span className="font-medium">
+                <span className="text-muted-foreground font-bold">Margin:</span>
+                <span className="font-bold">
                   {formatPercentage(data.summary.margin || '0')}
                 </span>
               </div>
@@ -185,19 +189,19 @@ export default function Component() {
 
           <div className="pt-2 border-t">
             <div className="flex justify-between text-xs">
-              <span className="text-green-600">
+              <span className="text-green-600 font-bold">
                 Profitable: {data.orderAnalysis.profitableOrders}
               </span>
-              <span className="text-red-600">
+              <span className="text-red-600 font-bold">
                 Unprofitable: {data.orderAnalysis.unprofitableOrders}
               </span>
-              <span className="text-gray-600">
+              <span className="text-gray-600 font-bold">
                 Neutral: {data.orderAnalysis.neutralOrders}
               </span>
             </div>
           </div>
 
-          <div className="text-xs text-muted-foreground">
+          <div className="text-xs text-muted-foreground font-bold">
             {format(new Date(data.period.start), 'MMM dd')} -{' '}
             {format(new Date(data.period.end), 'MMM dd')}
           </div>
@@ -222,18 +226,43 @@ export default function Component() {
         <h1 className="text-3xl font-bold">Sales Analytics Dashboard</h1>
 
         <div className="flex flex-col sm:flex-row gap-2 items-center">
-          <Select onValueChange={(value) => setStoreId(value)}>
-            <SelectTrigger className="w-[240px]">
-              <SelectValue placeholder="Select Store" />
-            </SelectTrigger>
-            <SelectContent>
-              {stores?.map((store) => (
-                <SelectItem key={store.storeId + 1} value={store.storeId}>
-                  {store.storeName}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+          <Popover>
+            <PopoverTrigger asChild>
+              <Button
+                variant="outline"
+                className="w-[240px] justify-start text-left font-normal"
+              >
+                {storeIds.length > 0
+                  ? `${storeIds.length} Store(s) Selected`
+                  : 'Select Store(s)'}
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-[240px]">
+              <div className="flex flex-col gap-2">
+                {stores.map((store) => (
+                  <label
+                    key={store.storeId}
+                    className="flex items-center gap-2 cursor-pointer"
+                  >
+                    <input
+                      type="checkbox"
+                      checked={storeIds.includes(store.storeId)}
+                      onChange={(e) => {
+                        if (e.target.checked) {
+                          setStoreIds((prev) => [...prev, store.storeId]);
+                        } else {
+                          setStoreIds((prev) =>
+                            prev.filter((id) => id !== store.storeId)
+                          );
+                        }
+                      }}
+                    />
+                    {store.storeName}
+                  </label>
+                ))}
+              </div>
+            </PopoverContent>
+          </Popover>
           <Popover>
             <PopoverTrigger asChild>
               <Button
@@ -276,7 +305,7 @@ export default function Component() {
 
           <Button
             variant="default"
-            disabled={!startDate || !endDate || !storeId}
+            disabled={!startDate || !endDate || storeIds.length === 0}
             onClick={() => refetchCustomData()}
           >
             Apply Filter

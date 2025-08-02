@@ -17,7 +17,8 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { useStoresData } from '@/hooks/useStoreData';
 import { useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
-import { StoreSelector } from './StoreSlector';
+import { Checkbox } from '../ui/checkbox';
+import { Popover, PopoverContent, PopoverTrigger } from '../ui/popover';
 
 interface SummaryData {
   totalPurchase: number;
@@ -32,28 +33,43 @@ interface SummaryData {
 
 interface InventorySummaryProps {
   summary: SummaryData | undefined;
-  handleStoreChange: (newStoreId: string) => void;
+  handleStoreChange: (newStoreIds: string[]) => void; // Now multiple
 }
 
 export default function InventorySummary({
   summary,
   handleStoreChange,
 }: InventorySummaryProps) {
-  const [selectedStore, setSelectedStore] = useState<string>('all');
+  const [selectedStores, setSelectedStores] = useState<string[]>([]);
   const { data: stores = [], isLoading: isLoadingStores } = useStoresData();
 
   const formatCurrency = (value: number) => `$${Number(value || 0).toFixed(2)}`;
 
-  const getSelectedStoreName = () => {
-    if (selectedStore === 'all') return 'All Stores';
-    const store = stores.find((s) => s._id === selectedStore);
-    return store?.storeName || 'Unknown Store';
+  const getSelectedStoreNames = () => {
+    if (selectedStores.length === 0) return 'All Stores';
+    const names = stores
+      .filter((s) => selectedStores.includes(s._id as string))
+      .map((s) => s.storeName);
+    return names.length > 0 ? names.join(', ') : 'Selected Stores';
   };
 
-  const handleStoreSelect = (storeId: string) => {
-    setSelectedStore(storeId);
-    handleStoreChange(storeId); // Tell parent to filter
+  const handleCheckboxChange = (storeId: string, checked: boolean) => {
+    setSelectedStores((prev) => {
+      let newSelected;
+      if (checked) {
+        newSelected = [...prev, storeId];
+      } else {
+        newSelected = prev.filter((id) => id !== storeId);
+      }
+      handleStoreChange(newSelected);
+      return newSelected;
+    });
   };
+  const clearSelection = () => {
+    setSelectedStores([]);
+    handleStoreChange([]);
+  };
+
   const queryClient = useQueryClient();
 
   const handleRefresh = () => {
@@ -64,15 +80,51 @@ export default function InventorySummary({
     <div className="p-6 w-full mx-auto">
       {/* Store Selector */}
       <div className="flex items-center justify-between mb-6">
-        <StoreSelector
-          selectedStore={selectedStore}
-          onStoreChange={handleStoreSelect}
-          stores={stores}
-          isLoading={isLoadingStores}
-        />
+        <Popover>
+          <PopoverTrigger asChild>
+            <Button variant="outline" className="min-w-[200px]">
+              Select Store(s) {selectedStores.length}
+            </Button>
+          </PopoverTrigger>
+          <PopoverContent className="w-[300px] p-4 shadow-none" align="start">
+            {isLoadingStores ? (
+              <Skeleton className="h-8 w-full" />
+            ) : (
+              <div className="flex flex-col max-h-60 overflow-auto space-y-2">
+                {stores.map((store) => {
+                  const checked = selectedStores.includes(store._id as string);
+                  return (
+                    <label
+                      key={store._id}
+                      className="inline-flex items-center space-x-2 cursor-pointer"
+                    >
+                      <Checkbox
+                        checked={checked}
+                        onCheckedChange={(checked) =>
+                          handleCheckboxChange(store._id as string, !!checked)
+                        }
+                      />
+                      <span>{store.storeName}</span>
+                    </label>
+                  );
+                })}
+              </div>
+            )}
+            {selectedStores.length > 0 && (
+              <Button
+                variant="destructive"
+                className="mt-3 w-full"
+                onClick={clearSelection}
+              >
+                Clear All
+              </Button>
+            )}
+          </PopoverContent>
+        </Popover>
+
         <div className="flex items-center space-x-2">
           <span className="text-sm text-muted-foreground">
-            Showing data for: <strong>{getSelectedStoreName()}</strong>
+            Showing data for: <strong>{getSelectedStoreNames()}</strong>
           </span>
           <Button variant="outline" size="sm" onClick={handleRefresh}>
             <RefreshCw className="h-4 w-4" />
