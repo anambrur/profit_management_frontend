@@ -801,12 +801,6 @@ export function ProductHistoryTable({
                 </TableHead>
                 <TableHead className="font-semibold min-w-[100px] text-slate-700">
                   <div className="flex items-center gap-2">
-                    <TrendingUp className="h-4 w-4 text-green-600" />
-                    Received
-                  </div>
-                </TableHead>
-                <TableHead className="font-semibold min-w-[100px] text-slate-700">
-                  <div className="flex items-center gap-2">
                     <TrendingDown className="h-4 w-4 text-red-600" />
                     Lost
                   </div>
@@ -880,7 +874,10 @@ export function ProductHistoryTable({
               {products.map((product: ProductHistory, index) => {
                 const { formattedDate } = formatDate(product.date);
                 const isHovered = hoveredRow === product._id;
-                const remaining = product.receiveQuantity - product.sendToWFS;
+                const remaining =
+                  product.receiveQuantity -
+                  product.sendToWFS -
+                  product.lostQuantity;
                 const totalCost =
                   product.purchaseQuantity * Number(product.costOfPrice);
                 const wfsCost = product.sendToWFS * Number(product.costOfPrice);
@@ -1043,26 +1040,6 @@ export function ProductHistoryTable({
                     </TableCell>
 
                     {/* Received */}
-                    <TableCell className="py-6">
-                      <div className="flex items-center gap-2 group/received">
-                        <span className="font-semibold text-green-700 bg-green-50 px-2 py-1 rounded-md">
-                          {Number(product.receiveQuantity) || 0}
-                        </span>
-                        <EditPopover
-                          value={product.receiveQuantity}
-                          onSave={(value: string) =>
-                            handleFieldUpdate(
-                              product._id,
-                              'receiveQuantity',
-                              value
-                            )
-                          }
-                          type="number"
-                          label="Received Quantity"
-                          icon={<Hash className="h-4 w-4" />}
-                        />
-                      </div>
-                    </TableCell>
 
                     {/* Lost */}
                     <TableCell className="py-6">
