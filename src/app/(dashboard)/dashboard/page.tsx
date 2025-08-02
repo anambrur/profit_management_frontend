@@ -94,7 +94,7 @@ export default function Component() {
   const {
     data: customData,
     isLoading: isCustomLoading,
-    refetch: refetchCustomData,
+    refetch: refetchCustomData, 
   } = useQuery({
     queryKey: ['customProfit', startDate, endDate, storeId],
     queryFn: async () => {

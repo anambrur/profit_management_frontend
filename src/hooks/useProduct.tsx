@@ -73,6 +73,7 @@ const fetchProducts = async (
       `/api/products/get-products?${searchParams.toString()}`
     );
 
+
     return response.data;
   } catch (error) {
     console.error('Fetch products error:', error);
@@ -80,10 +81,12 @@ const fetchProducts = async (
   }
 };
 
+
+
 export function useProducts(params: Partial<UseProductsParams> = {}) {
   const {
     page = 1,
-    limit = 50,
+    limit = 10,
     search = '',
     availability = '',
     storeId = '',
