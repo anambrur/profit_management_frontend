@@ -875,7 +875,7 @@ export function ProductHistoryTable({
                 const { formattedDate } = formatDate(product.date);
                 const isHovered = hoveredRow === product._id;
                 const remaining =
-                  product.receiveQuantity -
+                  product.purchaseQuantity -
                   product.sendToWFS -
                   product.lostQuantity;
                 const totalCost =
