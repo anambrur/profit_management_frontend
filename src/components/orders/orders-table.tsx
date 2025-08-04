@@ -76,7 +76,7 @@ export interface ApiResponse {
 
 export function OrdersTable() {
   const [page, setPage] = useState(1);
-  const [limit, setLimit] = useState(20);
+  const [limit, setLimit] = useState(10);
   const [search, setSearch] = useState('');
   const [status, setStatus] = useState('');
   const [storeId, setStoreId] = useState('');
@@ -185,7 +185,6 @@ export function OrdersTable() {
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <div className="flex items-center space-x-2">
-          <h2 className="text-lg font-semibold">Orders</h2>
           {isFetching && (
             <div className="flex items-center text-sm text-muted-foreground">
               <RefreshCw className="h-3 w-3 mr-1 animate-spin" />
