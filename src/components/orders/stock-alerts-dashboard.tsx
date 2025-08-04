@@ -17,9 +17,11 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import axiosInstance from '@/lib/axiosInstance';
+import { stringToColor } from '@/lib/utils';
 import { useQuery } from '@tanstack/react-query';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Loader } from 'lucide-react';
 import { useState } from 'react';
+import { Badge } from '../ui/badge';
 import {
   Dialog,
   DialogContent,
@@ -107,7 +109,6 @@ export default function StockAlertsDashboard() {
       return res.data;
     },
   });
-  if (isLoading) return <div>Loading...</div>;
   if (!stockAlertsData) return <div>No data found</div>;
 
   return (
@@ -136,43 +137,58 @@ export default function StockAlertsDashboard() {
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead>Store Name</TableHead>
+                      <TableHead className="pl-7">Store Name</TableHead>
                       <TableHead>SKU</TableHead>
                       <TableHead className="text-center">
                         Units Needed
                       </TableHead>
-                      <TableHead className="text-right">
+                      <TableHead className="text-right pr-7">
                         View Orders Id
                       </TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {stockAlertsData.stockAlerts.map((alert, idx) => (
-                      <TableRow
-                        key={idx}
-                        className="cursor-pointer hover:bg-muted/50"
-                      >
-                        <TableCell className="font-mono text-sm">
-                          {alert.storeName}
-                        </TableCell>
-                        <TableCell className="font-mono text-sm">
-                          {alert.sku}
-                        </TableCell>
-                        <TableCell className="text-center text-red-600 font-semibold">
-                          {alert.totalQuantityNeeded}
-                        </TableCell>
-                        <TableCell className="text-right">
-                          <Button
-                            onClick={() => {
-                              setSelectedOrders(alert.orderIds);
-                              setOpenDialog(true);
-                            }}
+                    {isLoading ? (
+                      <Loader className="animate-spin w-9 h-9" />
+                    ) : (
+                      stockAlertsData.stockAlerts.map((alert, idx) => {
+                        const storeId = alert.storeId || alert.storeName;
+                        const color = stringToColor(storeId);
+
+                        return (
+                          <TableRow
+                            key={idx}
+                            className="cursor-pointer hover:bg-muted/50"
                           >
-                            View
-                          </Button>
-                        </TableCell>
-                      </TableRow>
-                    ))}
+                            <TableCell className="font-mono text-sm pl-7">
+                              <Badge
+                                className="text-white py-2  px-5"
+                                style={{ backgroundColor: color }}
+                              >
+                                {alert.storeName}
+                              </Badge>
+                            </TableCell>
+                            <TableCell className="font-mono text-sm">
+                              {alert.sku}
+                            </TableCell>
+                            <TableCell className="text-center text-red-600 font-semibold">
+                              {alert.totalQuantityNeeded}
+                            </TableCell>
+                            <TableCell className="text-right pr-7">
+                              <Button
+                                size={'sm'}
+                                onClick={() => {
+                                  setSelectedOrders(alert.orderIds);
+                                  setOpenDialog(true);
+                                }}
+                              >
+                                View
+                              </Button>
+                            </TableCell>
+                          </TableRow>
+                        );
+                      })
+                    )}
                   </TableBody>
                 </Table>
               </div>
@@ -190,9 +206,13 @@ export default function StockAlertsDashboard() {
 
                 <div className="flex items-center space-x-2">
                   <Button
+                    type="button"
                     variant="outline"
                     size="sm"
-                    onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
+                    onClick={(e) => {
+                      e.preventDefault();
+                      setCurrentPage(Math.max(1, currentPage - 1));
+                    }}
                     disabled={currentPage === 1}
                   >
                     <ChevronLeft className="h-4 w-4" />
@@ -206,12 +226,16 @@ export default function StockAlertsDashboard() {
                         const page = i + 1;
                         return (
                           <Button
+                            type="button"
                             key={page}
                             variant={
                               currentPage === page ? 'default' : 'outline'
                             }
                             size="sm"
-                            onClick={() => setCurrentPage(page)}
+                            onClick={(e) => {
+                              e.preventDefault();
+                              setCurrentPage(page);
+                            }}
                             className="w-8 h-8 p-0"
                           >
                             {page}
@@ -223,9 +247,13 @@ export default function StockAlertsDashboard() {
                       <>
                         <span className="text-muted-foreground">...</span>
                         <Button
+                          type="button"
                           variant="outline"
                           size="sm"
-                          onClick={() => setCurrentPage(stockAlertsData.pages)}
+                          onClick={(e) => {
+                            e.preventDefault();
+                            setCurrentPage(stockAlertsData.pages);
+                          }}
                           className="w-8 h-8 p-0"
                         >
                           {stockAlertsData.pages}
@@ -235,13 +263,15 @@ export default function StockAlertsDashboard() {
                   </div>
 
                   <Button
+                    type="button"
                     variant="outline"
                     size="sm"
-                    onClick={() =>
+                    onClick={(e) => {
+                      e.preventDefault();
                       setCurrentPage(
                         Math.min(stockAlertsData.pages, currentPage + 1)
-                      )
-                    }
+                      );
+                    }}
                     disabled={currentPage === stockAlertsData.pages}
                   >
                     Next
@@ -265,32 +295,43 @@ export default function StockAlertsDashboard() {
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead>Store Name</TableHead>
+                      <TableHead className="pl-7">Store Name</TableHead>
                       <TableHead>SKU</TableHead>
                       <TableHead className="text-center">Order ID</TableHead>
-                      <TableHead className="text-right">Reason</TableHead>
+                      <TableHead className="text-right pr-7">Reason</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {notFoundData?.failedOrders.map((item, idx: number) => (
-                      <TableRow
-                        key={idx}
-                        className="cursor-pointer hover:bg-muted/50"
-                      >
-                        <TableCell className="font-mono text-sm">
-                          {item.storeObjectId.storeName}
-                        </TableCell>
-                        <TableCell className="font-mono text-sm">
-                          {item.sku}
-                        </TableCell>
-                        <TableCell className="text-center text-red-600 font-semibold">
-                          {item.orderId}
-                        </TableCell>
-                        <TableCell className="text-right">
-                          {item.reason}
-                        </TableCell>
-                      </TableRow>
-                    ))}
+                    {notFoundData?.failedOrders.map((item, idx: number) => {
+                      const storeId =
+                        item.storeObjectId._id || item.storeObjectId.storeName;
+                      const color = stringToColor(storeId);
+
+                      return (
+                        <TableRow
+                          key={idx}
+                          className="cursor-pointer hover:bg-muted/50"
+                        >
+                          <TableCell className="font-mono text-sm pl-7 ">
+                            <Badge
+                              className="text-white py-2  px-5"
+                              style={{ backgroundColor: color }}
+                            >
+                              {item.storeObjectId.storeName}
+                            </Badge>
+                          </TableCell>
+                          <TableCell className="font-mono text-sm">
+                            {item.sku}
+                          </TableCell>
+                          <TableCell className="text-center text-red-600 font-semibold">
+                            {item.orderId}
+                          </TableCell>
+                          <TableCell className="text-right pr-7">
+                            {item.reason}
+                          </TableCell>
+                        </TableRow>
+                      );
+                    })}
                   </TableBody>
                 </Table>
               </div>

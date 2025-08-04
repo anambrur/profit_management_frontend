@@ -49,6 +49,12 @@ const navigationItems = [
     requiredPermissions: ['product-history:view'],
   },
   {
+    title: 'Purchases History Error',
+    url: '/history-error',
+    icon: MdManageHistory,
+    requiredPermissions: ['product-history:view'],
+  },
+  {
     title: 'Stores',
     url: '/store',
     icon: BiStoreAlt,
