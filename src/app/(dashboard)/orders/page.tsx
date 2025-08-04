@@ -1,6 +1,6 @@
 'use client';
 
-import { OrdersTable } from '@/components/orders/orders-table';
+import StockAlertsDashboard from '@/components/orders/stock-alerts-dashboard';
 import axiosInstance from '@/lib/axiosInstance';
 import { useAuthStore } from '@/store/useAuthStore';
 import { useQuery } from '@tanstack/react-query';
@@ -78,7 +78,8 @@ export default function OrdersPage() {
       </div>
 
       {orders && orders.length > 0 ? (
-        <OrdersTable />
+        // <OrdersTable />
+        <StockAlertsDashboard />
       ) : (
         <div className="flex flex-col items-center justify-center py-12 border rounded-lg">
           <Package className="h-12 w-12 text-muted-foreground mb-4" />
@@ -91,3 +92,20 @@ export default function OrdersPage() {
     </div>
   );
 }
+
+
+
+
+// Store Name
+// Sku
+// Units Needed
+// View Orders Id
+
+
+// Product
+//  OrderID
+// UPC
+// Purchase
+//sent to Wfs
+// cost per item
+// sell Price
