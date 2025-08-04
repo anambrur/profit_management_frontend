@@ -93,14 +93,10 @@ export default function OrdersPage() {
   );
 }
 
-
-
-
 // Store Name
 // Sku
 // Units Needed
 // View Orders Id
-
 
 // Product
 //  OrderID
