@@ -63,6 +63,7 @@ export interface DashboardData {
   thisMonth: PeriodData;
   lastMonth: PeriodData;
   custom?: PeriodData;
+  last6Months: PeriodData;
 }
 
 export interface DashboardResponse {
@@ -88,7 +89,7 @@ export default function Component() {
   const {
     data: customData,
     isLoading: isCustomLoading,
-    refetch: refetchCustomData, 
+    refetch: refetchCustomData,
   } = useQuery({
     queryKey: ['customProfit', startDate, endDate, storeIds],
     queryFn: async () => {
@@ -338,6 +339,12 @@ export default function Component() {
         <PeriodCard
           title="Last Month"
           data={salesData.lastMonth}
+          icon={Users}
+          color="text-orange-600"
+        />
+        <PeriodCard
+          title="Last 6 Month"
+          data={salesData.last6Months}
           icon={Users}
           color="text-orange-600"
         />
