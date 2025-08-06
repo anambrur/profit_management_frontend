@@ -52,11 +52,9 @@ import {
   Mail,
   Minus,
   Package,
-  Plus,
   RotateCcw,
   Save,
   StoreIcon,
-  Trash,
   TrendingDown,
   TrendingUp,
   Truck,
@@ -64,19 +62,7 @@ import {
 } from 'lucide-react';
 import type React from 'react';
 import { JSX, useEffect, useRef, useState } from 'react';
-import { FiLoader } from 'react-icons/fi';
 import { HiOutlineBadgeCheck } from 'react-icons/hi';
-import {
-  Dialog,
-  DialogClose,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from '../ui/dialog';
-import AddProductHistory from './ProductAdd';
 
 // Types
 export interface ProductHistory {
@@ -102,28 +88,7 @@ export interface ProductHistory {
   totalPrice: string;
   date: string;
   __v: number;
-  product: Product;
   store: Store;
-}
-
-export interface Product {
-  _id: string;
-  mart: string;
-  sku: string;
-  condition: string;
-  availability: string;
-  wpid: string;
-  upc: string;
-  gtin: string;
-  productName: string;
-  productType: string;
-  onHand: number;
-  available: number;
-  publishedStatus: string;
-  lifecycleStatus: string;
-  __v: number;
-  createdAt: string;
-  updatedAt: string;
 }
 
 export interface Store {
@@ -761,13 +726,6 @@ export function ProductHistoryTable({
           <Table>
             <TableHeader>
               <TableRow className="border-b-2 hover:from-slate-150 hover:to-gray-150">
-                <TableHead className="font-semibold min-w-[220px] text-slate-700 py-4">
-                  <div className="flex items-center gap-2">
-                    <Package className="h-4 w-4 text-blue-600" />
-                    Product
-                    <ArrowUpDown className="h-3 w-3 text-slate-400" />
-                  </div>
-                </TableHead>
                 <TableHead className="font-semibold min-w-[180px] text-slate-700">
                   <div className="flex items-center gap-2">
                     <Hash className="h-4 w-4 text-green-600" />
@@ -896,39 +854,6 @@ export function ProductHistoryTable({
                     onMouseEnter={() => setHoveredRow(product._id)}
                     onMouseLeave={() => setHoveredRow(null)}
                   >
-                    {/* Product */}
-                    <TableCell className="py-6">
-                      <div className="space-y-2">
-                        {product.store?.storeName && (
-                          <Badge
-                            variant="secondary"
-                            className="text-xs bg-blue-100 text-blue-700 border-blue-200 hover:bg-blue-200"
-                          >
-                            {product.store.storeName}
-                          </Badge>
-                        )}
-                        <TooltipProvider>
-                          <Tooltip>
-                            <TooltipTrigger asChild>
-                              <p className="font-semibold text-sm text-slate-800 truncate max-w-[200px] cursor-help leading-relaxed">
-                                {product.product?.productName ||
-                                  'Unnamed Product'}
-                              </p>
-                            </TooltipTrigger>
-                            <TooltipContent
-                              side="top"
-                              className="max-w-xs bg-slate-800 text-white"
-                            >
-                              <p className="text-sm">
-                                {product.product?.productName ||
-                                  'Unnamed Product'}
-                              </p>
-                            </TooltipContent>
-                          </Tooltip>
-                        </TooltipProvider>
-                      </div>
-                    </TableCell>
-
                     {/* Order ID */}
                     <TableCell className="py-6">
                       <div className="flex items-center gap-2 group/orderId">
@@ -984,14 +909,6 @@ export function ProductHistoryTable({
                         />
                       </div>
                     </TableCell>
-
-                    {/* SKU */}
-                    <TableCell className="py-6">
-                      <code className="text-xs bg-slate-100 text-slate-700 px-3 py-1.5 rounded-md font-mono border">
-                        {product.product?.sku || 'N/A'}
-                      </code>
-                    </TableCell>
-
                     {/* Card */}
                     <TableCell className="py-6">
                       <div className="flex items-center gap-2 group/card">
@@ -1254,7 +1171,7 @@ export function ProductHistoryTable({
                       </div>
                     </TableCell>
 
-                    {/* Actions */}
+                    {/* Actions
                     <TableCell className="py-6">
                       <div className="flex items-center gap-1">
                         <AddProductHistory
@@ -1319,7 +1236,7 @@ export function ProductHistoryTable({
                           </form>
                         </Dialog>
                       </div>
-                    </TableCell>
+                    </TableCell> */}
                   </TableRow>
                 );
               })}
