@@ -40,29 +40,8 @@ export interface ProductHistory {
   totalPrice: string;
   date: string;
   __v: number;
-  product: Product;
   store: Store;
   summary: SummaryData;
-}
-
-export interface Product {
-  _id: string;
-  mart: string;
-  sku: string;
-  condition: string;
-  availability: string;
-  wpid: string;
-  upc: string;
-  gtin: string;
-  productName: string;
-  productType: string;
-  onHand: number;
-  available: number;
-  publishedStatus: string;
-  lifecycleStatus: string;
-  __v: number;
-  createdAt: string;
-  updatedAt: string;
 }
 
 export interface Store {
@@ -124,6 +103,7 @@ export const getProducts = async ({
         timeout: 5000, // 5 second timeout
       }
     );
+
 
     if (res.data.error) {
       throw new Error(res.data.error);
