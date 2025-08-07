@@ -104,7 +104,6 @@ export const getProducts = async ({
       }
     );
 
-
     if (res.data.error) {
       throw new Error(res.data.error);
     }
