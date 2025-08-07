@@ -1,10 +1,10 @@
 import { Providers } from '@/components/providers';
 import type { Metadata } from 'next';
-import { Plus_Jakarta_Sans } from 'next/font/google';
+import { Inter } from 'next/font/google';
 import { Toaster } from 'react-hot-toast';
 import './globals.css';
 
-const plusJakartaSans = Plus_Jakarta_Sans({
+const outfit = Inter({
   subsets: ['latin'],
 });
 
@@ -21,7 +21,7 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning={true}>
       <body
-        className={`${plusJakartaSans.className} antialiased`}
+        className={`${outfit.className} antialiased`}
         suppressHydrationWarning={true}
       >
         <Providers>

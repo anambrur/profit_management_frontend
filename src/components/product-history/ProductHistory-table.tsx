@@ -52,9 +52,11 @@ import {
   Mail,
   Minus,
   Package,
+  Plus,
   RotateCcw,
   Save,
   StoreIcon,
+  Trash,
   TrendingDown,
   TrendingUp,
   Truck,
@@ -62,7 +64,19 @@ import {
 } from 'lucide-react';
 import type React from 'react';
 import { JSX, useEffect, useRef, useState } from 'react';
+import { FiLoader } from 'react-icons/fi';
 import { HiOutlineBadgeCheck } from 'react-icons/hi';
+import {
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from '../ui/dialog';
+import AddProductHistory from './ProductAdd';
 
 // Types
 export interface ProductHistory {
@@ -739,12 +753,6 @@ export function ProductHistoryTable({
                     Supplier
                   </div>
                 </TableHead>
-                <TableHead className="font-semibold min-w-[120px] text-slate-700">
-                  <div className="flex items-center gap-2">
-                    <Hash className="h-4 w-4 text-orange-600" />
-                    UPC
-                  </div>
-                </TableHead>
                 <TableHead className="font-semibold min-w-[140px] text-slate-700">
                   <div className="flex items-center gap-2">
                     <CreditCard className="h-4 w-4 text-indigo-600" />
@@ -909,6 +917,7 @@ export function ProductHistoryTable({
                         />
                       </div>
                     </TableCell>
+
                     {/* Card */}
                     <TableCell className="py-6">
                       <div className="flex items-center gap-2 group/card">
@@ -955,8 +964,6 @@ export function ProductHistoryTable({
                         />
                       </div>
                     </TableCell>
-
-                    {/* Received */}
 
                     {/* Lost */}
                     <TableCell className="py-6">
@@ -1171,11 +1178,11 @@ export function ProductHistoryTable({
                       </div>
                     </TableCell>
 
-                    {/* Actions
+                    {/* Actions */}
                     <TableCell className="py-6">
                       <div className="flex items-center gap-1">
                         <AddProductHistory
-                          productId={product.product._id}
+                          productId={product._id}
                           node={
                             <Button
                               size="sm"
@@ -1236,7 +1243,7 @@ export function ProductHistoryTable({
                           </form>
                         </Dialog>
                       </div>
-                    </TableCell> */}
+                    </TableCell>
                   </TableRow>
                 );
               })}
