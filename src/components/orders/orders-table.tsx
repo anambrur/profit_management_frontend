@@ -35,9 +35,14 @@ import {
 } from 'lucide-react';
 import Image from 'next/image';
 import { useState } from 'react';
+import { BiPurchaseTag } from 'react-icons/bi';
+import { FaCirclePlus } from 'react-icons/fa6';
+import { GiProfit } from 'react-icons/gi';
+import { GrOptimize } from 'react-icons/gr';
+import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
 import { Input } from '../ui/input';
+import { Skeleton } from '../ui/skeleton';
 import { Tooltip, TooltipContent, TooltipTrigger } from '../ui/tooltip';
-
 export interface OrderedProduct {
   _id: string;
   quantity: number;
@@ -181,21 +186,44 @@ export function OrdersTable() {
 
   const startIndex = (data.page - 1) * data.limit + 1;
   const endIndex = Math.min(data.page * data.limit, data.total);
-
+  const TotalProfit =
+    (data.sums.totalSellPrice ? data.sums.totalSellPrice : 0) -
+    (data.sums.totalPurchaseCost ? data.sums.totalPurchaseCost : 0);
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-between">
-        <div className="w-60 h-15 border bg-white shadow-sm rounded-sm border-gray-200">
-          <div className="flex flex-col justify-center items-center h-full">
-            <span className="text-2xl font font-bold">
-              Total Orders: {data.total}
-            </span>
-          </div>
-        </div>
+      <div className="grid grid-cols-4 gap-6">
+        <SummaryCard
+          value={data.total}
+          title="Total Orders"
+          description="Total Orders"
+          isLoading={isLoading}
+          icon={<FaCirclePlus />}
+        />
+        <SummaryCard
+          value={data.sums.totalPurchaseCost ? data.sums.totalPurchaseCost : 0}
+          title="Total Purchases"
+          description="Total Purchases Price"
+          isLoading={isLoading}
+          icon={<BiPurchaseTag />}
+        />
+        <SummaryCard
+          value={data.sums.totalSellPrice ? data.sums.totalSellPrice : 0}
+          title="Total Sells"
+          description="Total Sells Price"
+          isLoading={isLoading}
+          icon={<GrOptimize />}
+        />
+        <SummaryCard
+          value={TotalProfit}
+          title="Total Profits"
+          description="Total Profit Amount"
+          isLoading={isLoading}
+          icon={<GiProfit />}
+        />
       </div>
 
       <div className="flex flex-wrap gap-4 items-center justify-between mb-4">
-        <div className="flex items-center gap-4 flex-1 min-w-[300px]">
+        <div className="w-full  items-center gap-4 flex-1 min-w-[300px]">
           <SearchInput value={search} onChange={setSearch} />
           {hasFilters && (
             <Button
@@ -433,7 +461,7 @@ export function OrdersTable() {
                     <div className="flex flex-col gap-2 py-1">
                       <span className="text-sm text-muted-foreground font-medium">
                         {order.products.map((product) => (
-                          <span>
+                          <span key={product._id}>
                             ${product.quantity * Number(product.PurchasePrice)}
                           </span>
                         ))}
@@ -445,8 +473,8 @@ export function OrdersTable() {
                   <TableCell>
                     <div className="flex flex-col gap-2 py-1">
                       <span className="text-sm text-muted-foreground font-medium">
-                        {order.products.map((product) => (
-                          <span key={product._id} className=''>
+                        {order.products.map((product, idx) => (
+                          <span key={product._id + idx} className="">
                             $
                             {Number(
                               Number(product.sellPrice) -
@@ -462,8 +490,11 @@ export function OrdersTable() {
                   <TableCell className="text-right pr-5">
                     <div className="flex flex-col gap-2 items-end py-1">
                       <span className="font-medium">
-                        {order.products.map((product) => (
-                          <div className="flex flex-col text-gray-500 text-xs">
+                        {order.products.map((product, idx) => (
+                          <div
+                            key={product._id + idx}
+                            className="flex flex-col text-gray-500 text-xs"
+                          >
                             <span>Sell Price: ${product.sellPrice}</span>
                             <span>
                               Shipping: $
@@ -579,7 +610,7 @@ function SearchInput({ value, onChange }: SearchInputProps) {
       placeholder="Search orders..."
       value={value}
       onChange={(e) => onChange(e.target.value)}
-      className="w-full max-w-sm"
+      className="w-full"
     />
   );
 }
@@ -636,3 +667,34 @@ function StoreSelect({ stores, value, onChange }: StoreSelectProps) {
     </Select>
   );
 }
+
+const SummaryCard = ({
+  title,
+  icon,
+  value,
+  isLoading,
+  description,
+  valueClass = '',
+}: {
+  title: string;
+  icon: React.ReactNode;
+  value: React.ReactNode;
+  isLoading: boolean;
+  description: string;
+  valueClass?: string;
+}) => (
+  <Card>
+    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+      <CardTitle className="text-sm font-medium">{title}</CardTitle>
+      {icon}
+    </CardHeader>
+    <CardContent>
+      {isLoading ? (
+        <Skeleton className="h-8 w-24" />
+      ) : (
+        <div className={`text-2xl font-bold ${valueClass}`}>{value}</div>
+      )}
+      <p className="text-xs text-muted-foreground">{description}</p>
+    </CardContent>
+  </Card>
+);
