@@ -32,10 +32,9 @@ import {
   TooltipTrigger,
 } from '@/components/ui/tooltip';
 import axiosInstance from '@/lib/axiosInstance';
-import { cn } from '@/lib/utils';
+import { cn, stringToColor } from '@/lib/utils';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import {
-  ArrowUpDown,
   BadgeX,
   Calendar,
   CheckCircle2,
@@ -50,15 +49,11 @@ import {
   Hash,
   HelpCircle,
   Mail,
-  Minus,
-  Package,
   Plus,
   RotateCcw,
   Save,
   StoreIcon,
   Trash,
-  TrendingDown,
-  TrendingUp,
   Truck,
   X,
 } from 'lucide-react';
@@ -84,6 +79,9 @@ export interface ProductHistory {
   productId: string;
   orderId: string;
   storeID: string;
+  sku: string;
+  upc: string;
+  orderQuantity: number;
   purchaseQuantity: number;
   receiveQuantity: number;
   lostQuantity: number;
@@ -741,95 +739,58 @@ export function ProductHistoryTable({
             <TableHeader>
               <TableRow className="border-b-2 hover:from-slate-150 hover:to-gray-150">
                 <TableHead className="font-semibold min-w-[180px] text-slate-700">
-                  <div className="flex items-center gap-2">
-                    <Hash className="h-4 w-4 text-green-600" />
-                    Order ID
-                    <ArrowUpDown className="h-3 w-3 text-slate-400" />
-                  </div>
+                  Store Name
+                </TableHead>
+                <TableHead className="font-semibold min-w-[180px] text-slate-700">
+                  Order ID
                 </TableHead>
                 <TableHead className="font-semibold min-w-[160px] text-slate-700">
-                  <div className="flex items-center gap-2">
-                    <StoreIcon className="h-4 w-4 text-purple-600" />
-                    Supplier
-                  </div>
-                </TableHead>
-                <TableHead className="font-semibold min-w-[140px] text-slate-700">
-                  <div className="flex items-center gap-2">
-                    <CreditCard className="h-4 w-4 text-indigo-600" />
-                    Card
-                  </div>
+                  UPC/SKU
                 </TableHead>
                 <TableHead className="font-semibold min-w-[100px] text-slate-700">
-                  <div className="flex items-center gap-2">
-                    <TrendingUp className="h-4 w-4 text-blue-600" />
-                    Purchase
-                  </div>
+                  Purchase
                 </TableHead>
                 <TableHead className="font-semibold min-w-[100px] text-slate-700">
-                  <div className="flex items-center gap-2">
-                    <TrendingDown className="h-4 w-4 text-red-600" />
-                    Lost
-                  </div>
+                  Lost
                 </TableHead>
                 <TableHead className="font-semibold min-w-[120px] text-slate-700">
-                  <div className="flex items-center gap-2">
-                    <Package className="h-4 w-4 text-cyan-600" />
-                    Sent to WFS
-                  </div>
+                  Sent to WFS
                 </TableHead>
                 <TableHead className="font-semibold min-w-[100px] text-slate-700">
-                  <div className="flex items-center gap-2">
-                    <Minus className="h-4 w-4 text-slate-600" />
-                    Remaining
-                  </div>
-                </TableHead>
-                <TableHead className="font-semibold min-w-[130px] text-slate-700">
-                  <div className="flex items-center gap-2">
-                    <DollarSign className="h-4 w-4 text-green-600" />
-                    Cost Price
-                  </div>
-                </TableHead>
-                <TableHead className="font-semibold min-w-[130px] text-slate-700">
-                  <div className="flex items-center gap-2">
-                    <DollarSign className="h-4 w-4 text-blue-600" />
-                    Sell Price
-                  </div>
-                </TableHead>
-                <TableHead className="font-semibold min-w-[130px] text-slate-700">
-                  <div className="flex items-center gap-2">
-                    <DollarSign className="h-4 w-4 text-purple-600" />
-                    Total Cost
-                  </div>
-                </TableHead>
-                <TableHead className="font-semibold min-w-[140px] text-slate-700">
-                  <div className="flex items-center gap-2">
-                    <DollarSign className="h-4 w-4 text-orange-600" />
-                    WFS Cost
-                  </div>
-                </TableHead>
-                <TableHead className="font-semibold min-w-[140px] text-slate-700">
-                  <div className="flex items-center gap-2">
-                    <DollarSign className="h-4 w-4 text-teal-600" />
-                    Remaining Price
-                  </div>
-                </TableHead>
-                <TableHead className="font-semibold min-w-[200px] text-slate-700">
-                  <div className="flex items-center gap-2">
-                    <Mail className="h-4 w-4 text-pink-600" />
-                    Email
-                  </div>
-                </TableHead>
-                <TableHead className="font-semibold min-w-[200px] text-slate-700">
-                  <div className="flex items-center gap-2">
-                    <HiOutlineBadgeCheck className="h-4 w-4 text-blue-600" />
-                    Status
-                  </div>
+                  Remaining
                 </TableHead>
                 <TableHead className="font-semibold min-w-[160px] text-slate-700">
-                  <div className="flex items-center gap-2">
-                    <Calendar className="h-4 w-4 text-amber-600" />
-                    Date & Time
-                  </div>
+                  Order Quantity
+                </TableHead>
+                <TableHead className="font-semibold min-w-[130px] text-slate-700">
+                  Cost Price
+                </TableHead>
+                <TableHead className="font-semibold min-w-[130px] text-slate-700">
+                  Sell Price
+                </TableHead>
+                <TableHead className="font-semibold min-w-[130px] text-slate-700">
+                  Total Cost
+                </TableHead>
+                <TableHead className="font-semibold min-w-[140px] text-slate-700">
+                  WFS Cost
+                </TableHead>
+                <TableHead className="font-semibold min-w-[140px] text-slate-700">
+                  Remaining Price
+                </TableHead>
+                <TableHead className="font-semibold min-w-[160px] text-slate-700">
+                  Supplier
+                </TableHead>
+                <TableHead className="font-semibold min-w-[140px] text-slate-700">
+                  Card
+                </TableHead>
+                <TableHead className="font-semibold min-w-[200px] text-slate-700">
+                  Email
+                </TableHead>
+                <TableHead className="font-semibold min-w-[200px] text-slate-700">
+                  Status
+                </TableHead>
+                <TableHead className="font-semibold min-w-[160px] text-slate-700">
+                  Date & Time
                 </TableHead>
                 <TableHead className="font-semibold min-w-[80px] text-slate-700">
                   Actions
@@ -862,8 +823,22 @@ export function ProductHistoryTable({
                     onMouseEnter={() => setHoveredRow(product._id)}
                     onMouseLeave={() => setHoveredRow(null)}
                   >
+                    {/* STORE NAME */}
+                    <TableCell className="py-3">
+                      <Badge
+                        className="text-white"
+                        style={{
+                          backgroundColor: stringToColor(
+                            product.store.storeName
+                          ),
+                        }}
+                      >
+                        {product.store.storeName || 'N/A'}
+                      </Badge>
+                    </TableCell>
+
                     {/* Order ID */}
-                    <TableCell className="py-6">
+                    <TableCell className="py-3">
                       <div className="flex items-center gap-2 group/orderId">
                         <Badge
                           variant={product.orderId ? 'outline' : 'secondary'}
@@ -886,8 +861,163 @@ export function ProductHistoryTable({
                       </div>
                     </TableCell>
 
+                    {/* SKU/UPC */}
+                    <TableCell className="py-3 flex flex-col items-start">
+                      <span className="text-xs text-gray-500 font-medium">
+                        SKU: {product.sku}
+                      </span>
+                      <span className="text-xs text-gray-500 font-medium">
+                        UPC: {product.upc}
+                      </span>
+                    </TableCell>
+
+                    {/* Purchase Quantity */}
+                    <TableCell className="py-3">
+                      <div className="flex items-center gap-2 group/quantity">
+                        <span className="font-semibold text-blue-700 bg-blue-50 px-2 py-1 rounded-md">
+                          {product.purchaseQuantity}
+                        </span>
+                        <EditPopover
+                          value={product.purchaseQuantity}
+                          onSave={(value: string) =>
+                            handleFieldUpdate(
+                              product._id,
+                              'purchaseQuantity',
+                              value
+                            )
+                          }
+                          type="number"
+                          label="Purchase Quantity"
+                          icon={<Hash className="h-4 w-4" />}
+                        />
+                      </div>
+                    </TableCell>
+
+                    {/* Lost */}
+                    <TableCell className="py-3">
+                      <div className="flex items-center gap-2 group/lost">
+                        <span
+                          className={cn(
+                            'font-semibold px-2 py-1 rounded-md',
+                            Number(product.lostQuantity) > 0
+                              ? 'text-red-700 bg-red-50'
+                              : 'text-gray-600 bg-gray-50'
+                          )}
+                        >
+                          {Number(product.lostQuantity) || 0}
+                        </span>
+                        <EditPopover
+                          value={product.lostQuantity}
+                          onSave={(value: string) =>
+                            handleFieldUpdate(
+                              product._id,
+                              'lostQuantity',
+                              value
+                            )
+                          }
+                          type="number"
+                          label="Lost Quantity"
+                          icon={<Hash className="h-4 w-4" />}
+                        />
+                      </div>
+                    </TableCell>
+
+                    {/* Sent to WFS */}
+                    <TableCell className="py-3">
+                      <div className="flex items-center gap-2 group/wfs">
+                        <span className="font-semibold text-cyan-700 bg-cyan-50 px-2 py-1 rounded-md">
+                          {Number(product.sendToWFS) || 0}
+                        </span>
+                        <EditPopover
+                          value={product.sendToWFS}
+                          onSave={(value: string) =>
+                            handleFieldUpdate(product._id, 'sendToWFS', value)
+                          }
+                          type="number"
+                          label="Sent to WFS"
+                          icon={<Hash className="h-4 w-4" />}
+                        />
+                      </div>
+                    </TableCell>
+
+                    {/* Remaining Quantity */}
+                    <TableCell className="py-3">
+                      <span
+                        className={cn(
+                          'font-semibold px-2 py-1 rounded-md',
+                          remaining > 0
+                            ? 'text-emerald-700 bg-emerald-50'
+                            : remaining < 0
+                            ? 'text-red-700 bg-red-50'
+                            : 'text-gray-600 bg-gray-50'
+                        )}
+                      >
+                        {remaining}
+                      </span>
+                    </TableCell>
+
+                    {/* ORDER QUANTITY */}
+                    <TableCell className="py-3 text-center">
+                      <span>
+                        {product.orderQuantity ? product.orderQuantity : 0}
+                      </span>
+                    </TableCell>
+
+                    {/* Cost Price */}
+                    <TableCell className="py-3">
+                      <div className="flex items-center gap-2 group/cost">
+                        <span className="font-semibold text-green-700 bg-green-50 px-2 py-1 rounded-md">
+                          ${Number(product.costOfPrice) || 0}
+                        </span>
+                        <EditPopover
+                          value={product.costOfPrice}
+                          onSave={(value: string) =>
+                            handleFieldUpdate(product._id, 'costOfPrice', value)
+                          }
+                          type="number"
+                          label="Cost Price"
+                          icon={<DollarSign className="h-4 w-4" />}
+                        />
+                      </div>
+                    </TableCell>
+
+                    {/* Sell Price */}
+                    <TableCell className="py-3">
+                      <span className="font-semibold text-blue-700 bg-blue-50 px-2 py-1 rounded-md">
+                        ${Number(product.sellPrice) || 0}
+                      </span>
+                    </TableCell>
+
+                    {/* Total Cost */}
+                    <TableCell className="py-3">
+                      <span className="font-semibold text-purple-700 bg-purple-50 px-2 py-1 rounded-md">
+                        ${totalCost.toFixed(2)}
+                      </span>
+                    </TableCell>
+
+                    {/* WFS Cost */}
+                    <TableCell className="py-3">
+                      <span className="font-semibold text-orange-700 bg-orange-50 px-2 py-1 rounded-md">
+                        ${wfsCost.toFixed(2)}
+                      </span>
+                    </TableCell>
+
+                    {/* Remaining Price */}
+                    <TableCell className="py-3">
+                      <span
+                        className={cn(
+                          'font-semibold px-2 py-1 rounded-md',
+                          remainingPrice > 0
+                            ? 'text-teal-700 bg-teal-50'
+                            : 'text-gray-600 bg-gray-50'
+                        )}
+                      >
+                        ${remainingPrice.toFixed(2)}
+                      </span>
+                    </TableCell>
+
                     {/* Supplier */}
-                    <TableCell className="py-6">
+                    <TableCell className="py-3">
                       <div className="flex items-center gap-2 group/supplier">
                         <Badge
                           variant={
@@ -919,7 +1049,7 @@ export function ProductHistoryTable({
                     </TableCell>
 
                     {/* Card */}
-                    <TableCell className="py-6">
+                    <TableCell className="py-3">
                       <div className="flex items-center gap-2 group/card">
                         <Badge
                           variant={product.card ? 'outline' : 'secondary'}
@@ -943,146 +1073,8 @@ export function ProductHistoryTable({
                       </div>
                     </TableCell>
 
-                    {/* Purchase Quantity */}
-                    <TableCell className="py-6">
-                      <div className="flex items-center gap-2 group/quantity">
-                        <span className="font-semibold text-blue-700 bg-blue-50 px-2 py-1 rounded-md">
-                          {product.purchaseQuantity}
-                        </span>
-                        <EditPopover
-                          value={product.purchaseQuantity}
-                          onSave={(value: string) =>
-                            handleFieldUpdate(
-                              product._id,
-                              'purchaseQuantity',
-                              value
-                            )
-                          }
-                          type="number"
-                          label="Purchase Quantity"
-                          icon={<Hash className="h-4 w-4" />}
-                        />
-                      </div>
-                    </TableCell>
-
-                    {/* Lost */}
-                    <TableCell className="py-6">
-                      <div className="flex items-center gap-2 group/lost">
-                        <span
-                          className={cn(
-                            'font-semibold px-2 py-1 rounded-md',
-                            Number(product.lostQuantity) > 0
-                              ? 'text-red-700 bg-red-50'
-                              : 'text-gray-600 bg-gray-50'
-                          )}
-                        >
-                          {Number(product.lostQuantity) || 0}
-                        </span>
-                        <EditPopover
-                          value={product.lostQuantity}
-                          onSave={(value: string) =>
-                            handleFieldUpdate(
-                              product._id,
-                              'lostQuantity',
-                              value
-                            )
-                          }
-                          type="number"
-                          label="Lost Quantity"
-                          icon={<Hash className="h-4 w-4" />}
-                        />
-                      </div>
-                    </TableCell>
-
-                    {/* Sent to WFS */}
-                    <TableCell className="py-6">
-                      <div className="flex items-center gap-2 group/wfs">
-                        <span className="font-semibold text-cyan-700 bg-cyan-50 px-2 py-1 rounded-md">
-                          {Number(product.sendToWFS) || 0}
-                        </span>
-                        <EditPopover
-                          value={product.sendToWFS}
-                          onSave={(value: string) =>
-                            handleFieldUpdate(product._id, 'sendToWFS', value)
-                          }
-                          type="number"
-                          label="Sent to WFS"
-                          icon={<Hash className="h-4 w-4" />}
-                        />
-                      </div>
-                    </TableCell>
-
-                    {/* Remaining */}
-                    <TableCell className="py-6">
-                      <span
-                        className={cn(
-                          'font-semibold px-2 py-1 rounded-md',
-                          remaining > 0
-                            ? 'text-emerald-700 bg-emerald-50'
-                            : remaining < 0
-                            ? 'text-red-700 bg-red-50'
-                            : 'text-gray-600 bg-gray-50'
-                        )}
-                      >
-                        {remaining}
-                      </span>
-                    </TableCell>
-
-                    {/* Cost Price */}
-                    <TableCell className="py-6">
-                      <div className="flex items-center gap-2 group/cost">
-                        <span className="font-semibold text-green-700 bg-green-50 px-2 py-1 rounded-md">
-                          ${Number(product.costOfPrice) || 0}
-                        </span>
-                        <EditPopover
-                          value={product.costOfPrice}
-                          onSave={(value: string) =>
-                            handleFieldUpdate(product._id, 'costOfPrice', value)
-                          }
-                          type="number"
-                          label="Cost Price"
-                          icon={<DollarSign className="h-4 w-4" />}
-                        />
-                      </div>
-                    </TableCell>
-
-                    {/* Sell Price */}
-                    <TableCell className="py-6">
-                      <span className="font-semibold text-blue-700 bg-blue-50 px-2 py-1 rounded-md">
-                        ${Number(product.sellPrice) || 0}
-                      </span>
-                    </TableCell>
-
-                    {/* Total Cost */}
-                    <TableCell className="py-6">
-                      <span className="font-semibold text-purple-700 bg-purple-50 px-2 py-1 rounded-md">
-                        ${totalCost.toFixed(2)}
-                      </span>
-                    </TableCell>
-
-                    {/* WFS Cost */}
-                    <TableCell className="py-6">
-                      <span className="font-semibold text-orange-700 bg-orange-50 px-2 py-1 rounded-md">
-                        ${wfsCost.toFixed(2)}
-                      </span>
-                    </TableCell>
-
-                    {/* Remaining Price */}
-                    <TableCell className="py-6">
-                      <span
-                        className={cn(
-                          'font-semibold px-2 py-1 rounded-md',
-                          remainingPrice > 0
-                            ? 'text-teal-700 bg-teal-50'
-                            : 'text-gray-600 bg-gray-50'
-                        )}
-                      >
-                        ${remainingPrice.toFixed(2)}
-                      </span>
-                    </TableCell>
-
                     {/* Email */}
-                    <TableCell className="py-6">
+                    <TableCell className="py-3">
                       <div className="flex items-center gap-2 group/email">
                         <TooltipProvider>
                           <Tooltip>
@@ -1114,7 +1106,7 @@ export function ProductHistoryTable({
                     </TableCell>
 
                     {/* Status */}
-                    <TableCell className="py-6">
+                    <TableCell className="py-3">
                       <div className="flex items-center gap-2 group/email">
                         <TooltipProvider>
                           <Tooltip>
@@ -1158,8 +1150,9 @@ export function ProductHistoryTable({
                         />
                       </div>
                     </TableCell>
+
                     {/* Date */}
-                    <TableCell className="py-6">
+                    <TableCell className="py-3">
                       <div className="flex items-center gap-2 group/date">
                         <div className="text-sm bg-amber-50 px-2 py-1 rounded-md">
                           <div className="font-semibold text-amber-800">
@@ -1179,7 +1172,7 @@ export function ProductHistoryTable({
                     </TableCell>
 
                     {/* Actions */}
-                    <TableCell className="py-6">
+                    <TableCell className="py-3">
                       <div className="flex items-center gap-1">
                         <AddProductHistory
                           productId={product._id}

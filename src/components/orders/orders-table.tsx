@@ -53,6 +53,7 @@ export interface OrderedProduct {
 export interface Order {
   _id: string;
   storeId: string;
+  storeName: string;
   shipNodeType: 'SellerFulfilled' | 'Other';
   customerOrderId: string;
   status: 'Acknowledged' | 'Pending' | 'Shipped' | 'Delivered' | 'Cancelled';
@@ -184,37 +185,12 @@ export function OrdersTable() {
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <div className="flex items-center space-x-2">
-          {isFetching && (
-            <div className="flex items-center text-sm text-muted-foreground">
-              <RefreshCw className="h-3 w-3 mr-1 animate-spin" />
-              Updating...
-            </div>
-          )}
-        </div>
-        <div className="flex items-center gap-2">
-          {hasFilters && (
-            <Button
-              onClick={clearFilters}
-              variant="ghost"
-              size="sm"
-              className="text-muted-foreground hover:text-foreground"
-            >
-              <X className="h-4 w-4 mr-1" />
-              Clear filters
-            </Button>
-          )}
-          <Button
-            onClick={() => refetch()}
-            variant="outline"
-            size="sm"
-            disabled={isFetching}
-          >
-            <RefreshCw
-              className={`h-4 w-4 mr-2 ${isFetching ? 'animate-spin' : ''}`}
-            />
-            Refresh
-          </Button>
+        <div className="w-60 h-15 border bg-white shadow-sm rounded-sm border-gray-200">
+          <div className="flex flex-col justify-center items-center h-full">
+            <span className="text-2xl font font-bold">
+              Total Orders: {data.total}
+            </span>
+          </div>
         </div>
       </div>
 
@@ -305,7 +281,7 @@ export function OrdersTable() {
           <Table className="text-sm w-full">
             <TableHeader>
               <TableRow>
-                <TableHead className="min-w-[200px] font-semibold text-foreground/80 bg-muted/30 py-4">
+                <TableHead className="min-w-[200px] font-semibold text-foreground/80 bg-muted/30 py-4 pl-5">
                   Order Info
                 </TableHead>
                 <TableHead className="min-w-[280px] font-semibold text-foreground/80 bg-muted/30 py-4">
@@ -321,26 +297,32 @@ export function OrdersTable() {
                   Status
                 </TableHead>
                 <TableHead className="min-w-[140px] font-semibold text-foreground/80 bg-muted/30 py-4">
-                  Tax
+                  Cost Item
                 </TableHead>
-                <TableHead className="text-right min-w-[120px] font-semibold text-foreground/80 bg-muted/30 py-4">
+                <TableHead className="min-w-[140px] font-semibold text-foreground/80 bg-muted/30 py-4">
+                  Profit
+                </TableHead>
+                <TableHead className="text-right min-w-[120px] font-semibold text-foreground/80 bg-muted/30 py-4 pr-5">
                   Total
                 </TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
-              {data.orders.map((order: Order) => (
+              {data.orders.map((order: Order, index: any) => (
                 <TableRow
                   key={order._id}
-                  className="hover:bg-muted/30 transition-colors border-b border-border/30 group"
+                  className={`hover:bg-muted/30 transition-colors border-b border-border/30 group ${
+                    index % 2 === 0 ? 'bg-muted' : ''
+                  }`}
                 >
-                  <TableCell>
-                    <div className="flex flex-col gap-2 py-2">
+                  {/* ORDER INFO */}
+                  <TableCell className="pl-5">
+                    <div className="flex flex-col gap-1 py-1">
                       <Badge
                         variant="secondary"
                         className="w-fit text-xs font-medium px-2 py-1 bg-blue-50 text-blue-700 border-blue-200"
                       >
-                        Store: {order.storeId}
+                        {order.storeName}
                       </Badge>
                       <span className="font-semibold text-foreground group-hover:text-primary transition-colors">
                         {order.customerOrderId}
@@ -351,7 +333,8 @@ export function OrdersTable() {
                     </div>
                   </TableCell>
 
-                  <TableCell className="space-y-4 max-w-[280px] py-3 truncate">
+                  {/* PRODUCT INFO */}
+                  <TableCell className="space-y-4 max-w-[280px] py-1 truncate">
                     {order.products?.map((product) => (
                       <div
                         key={product._id}
@@ -369,7 +352,7 @@ export function OrdersTable() {
                             unoptimized
                           />
                         </div>
-                        <div className="flex-1 space-y-1 min-w-0">
+                        <div className="flex-1 space-y-0.5 items-start min-w-0">
                           <Tooltip>
                             <TooltipTrigger asChild>
                               <p className="font-medium line-clamp-2 text-foreground group-hover:text-primary transition-colors text-sm truncate">
@@ -381,15 +364,10 @@ export function OrdersTable() {
                             </TooltipContent>
                           </Tooltip>
 
-                          <p className="text-xs text-muted-foreground/80 font-mono bg-muted/30 px-2 py-1 rounded w-fit">
-                            SKU: {product.productSKU}
-                          </p>
-                          <div className="flex gap-3 flex-wrap text-xs">
-                            <span className=" font-medium bg-blue-50 text-blue-700 px-2 py-1 rounded">
+                          <div className="text-xs text-muted-foreground/80 font-mono bg-muted/30 px-2 py-1 rounded w-full flex justify-between items-center">
+                            <span>SKU: {product.productSKU}</span>
+                            <span className="font-medium bg-blue-50 text-blue-700 px-2 py-1 rounded">
                               Qty: {product.quantity}
-                            </span>
-                            <span className="font-medium bg-green-50 text-green-700 px-2 py-1 rounded">
-                              Price: ${product.sellPrice}
                             </span>
                           </div>
                         </div>
@@ -397,6 +375,7 @@ export function OrdersTable() {
                     ))}
                   </TableCell>
 
+                  {/* CUSTOMER INFO */}
                   <TableCell>
                     <HoverCard>
                       <HoverCardTrigger asChild>
@@ -418,20 +397,19 @@ export function OrdersTable() {
                     </HoverCard>
                   </TableCell>
 
+                  {/* SHIPPING INFO */}
                   <TableCell>
-                    <div className="flex flex-col gap-2 py-2">
+                    <div className="flex flex-col gap-2 py-1">
                       <Badge
                         variant="outline"
                         className="w-fit text-xs font-medium px-2 py-1 bg-purple-50 text-purple-700 border-purple-200"
                       >
                         {order.shipNodeType}
                       </Badge>
-                      <span className="text-xs text-muted-foreground font-medium">
-                        Shipping: ${order.products?.[0]?.shipping || '0.00'}
-                      </span>
                     </div>
                   </TableCell>
 
+                  {/* Status INFO */}
                   <TableCell>
                     <Badge
                       className={
@@ -450,27 +428,64 @@ export function OrdersTable() {
                     </Badge>
                   </TableCell>
 
+                  {/* COST ITEM */}
                   <TableCell>
-                    <div className="flex flex-col gap-2 py-2">
+                    <div className="flex flex-col gap-2 py-1">
                       <span className="text-sm text-muted-foreground font-medium">
-                        Tax: ${order.products?.[0]?.tax || '0.00'}
+                        {order.products.map((product) => (
+                          <span>
+                            ${product.quantity * Number(product.PurchasePrice)}
+                          </span>
+                        ))}
                       </span>
                     </div>
                   </TableCell>
 
-                  <TableCell className="text-right">
-                    <div className="flex flex-col gap-2 items-end py-2">
-                      <span className="font-bold text-lg text-foreground">
-                        $
-                        {order.products
-                          .reduce(
-                            (total, product) =>
-                              total +
-                              (Number(product.sellPrice) || 0) +
-                              (Number(product.tax) || 0),
-                            0
-                          )
-                          .toFixed(2)}
+                  {/* PROFIT */}
+                  <TableCell>
+                    <div className="flex flex-col gap-2 py-1">
+                      <span className="text-sm text-muted-foreground font-medium">
+                        {order.products.map((product) => (
+                          <span key={product._id} className=''>
+                            $
+                            {Number(
+                              Number(product.sellPrice) -
+                                Number(product.PurchasePrice)
+                            ).toFixed(2)}
+                          </span>
+                        ))}
+                      </span>
+                    </div>
+                  </TableCell>
+
+                  {/* TOTAL */}
+                  <TableCell className="text-right pr-5">
+                    <div className="flex flex-col gap-2 items-end py-1">
+                      <span className="font-medium">
+                        {order.products.map((product) => (
+                          <div className="flex flex-col text-gray-500 text-xs">
+                            <span>Sell Price: ${product.sellPrice}</span>
+                            <span>
+                              Shipping: $
+                              {product.shipping ? product.shipping : '0.00'}
+                            </span>
+                            <span>
+                              Tax: ${product.tax ? product.tax : '0.00'}
+                            </span>
+                            <span className="font-bold text-sm text-black/70">
+                              Total Price: $
+                              {order.products
+                                .reduce(
+                                  (total, product) =>
+                                    total +
+                                    (Number(product.sellPrice) || 0) +
+                                    (Number(product.tax) || 0),
+                                  0
+                                )
+                                .toFixed(2)}
+                            </span>
+                          </div>
+                        ))}
                       </span>
                     </div>
                   </TableCell>

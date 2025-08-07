@@ -194,7 +194,7 @@ export default function FailedUploadsComponent() {
                           <Badge
                             className="text-white"
                             style={{
-                              backgroundColor: stringToColor(upload._id),
+                              backgroundColor: stringToColor(upload.storeId),
                             }}
                           >
                             {upload.storeObjectId?.storeName || 'N/A'}

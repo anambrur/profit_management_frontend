@@ -36,7 +36,6 @@ const fetchOrders = async ({
   const response = await axiosInstance.get(
     `/api/orders/get-orders?${params.toString()}`
   );
-
   return response.data;
 };
 
