@@ -355,7 +355,7 @@ export default function StockAlertsDashboard() {
         onValueChange={setActiveTab}
         className="space-y-6"
       >
-        <TabsList className="grid w-full grid-cols-3">
+        <TabsList>
           <TabsTrigger value="order">Orders</TabsTrigger>
           <TabsTrigger value="error">Stock Alerts</TabsTrigger>
           <TabsTrigger value="notFound">Not Found Products</TabsTrigger>
