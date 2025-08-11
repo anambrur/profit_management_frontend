@@ -25,11 +25,13 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import useDebounce from '@/hooks/useDebounce';
 import axiosInstance from '@/lib/axiosInstance';
 import { useAllowedStores } from '@/store/useAuthStore';
 import { useQuery } from '@tanstack/react-query';
 import { AlertTriangle, ChevronLeft, ChevronRight, Copy } from 'lucide-react';
 import { useState } from 'react';
+import { Input } from '../ui/input';
 import { Popover, PopoverContent, PopoverTrigger } from '../ui/popover';
 import { OrdersTable } from './orders-table';
 
@@ -62,6 +64,7 @@ export interface StockAlert {
   storeObjectId: string;
   sku: string;
   storeName: string;
+  details: string;
   totalQuantityNeeded: number;
   totalQuantityAvailable: number;
   orderCount: number;
@@ -208,6 +211,8 @@ export default function StockAlertsDashboard() {
   const [notFoundCurrentPage, setNotFoundCurrentPage] = useState(1);
   const [openDialog, setOpenDialog] = useState(false);
   const [selectedOrders, setSelectedOrders] = useState<string[] | null>(null);
+  const [isSearch, setIsSearch] = useState('');
+  const debounceSearch = useDebounce(isSearch, 300);
   const stores = useAllowedStores();
   // Stock alerts query with better error handling
   const {
@@ -216,7 +221,7 @@ export default function StockAlertsDashboard() {
     error: stockAlertsError,
     refetch: refetchStockAlerts,
   } = useQuery<StockAlertsResponse>({
-    queryKey: ['stockalerts', currentPage, errorstoreIds],
+    queryKey: ['stockalerts', currentPage, errorstoreIds, debounceSearch],
     queryFn: async () => {
       try {
         const res = await axiosInstance.get('/api/error/get-all-stock-alerts', {
@@ -224,6 +229,7 @@ export default function StockAlertsDashboard() {
             page: currentPage,
             limit: 10,
             storeId: errorstoreIds.length > 0 ? errorstoreIds.join(',') : '',
+            search: debounceSearch,
           },
         });
         return res.data;
@@ -381,6 +387,13 @@ export default function StockAlertsDashboard() {
                       {stockAlertsData.pages})
                     </div>
                     <div className="flex items-center gap-4 mb-4">
+                      <Input
+                        type="text"
+                        value={isSearch}
+                        onChange={(e) => setIsSearch(e.target.value)}
+                        className="min-w-md bg-white"
+                        placeholder="Search with SKU"
+                      />
                       <Popover>
                         <PopoverTrigger asChild>
                           <Button
@@ -460,6 +473,7 @@ export default function StockAlertsDashboard() {
                           <TableHead className="text-center">
                             Units Needed
                           </TableHead>
+                          <TableHead className="text-left">Reason</TableHead>
                           <TableHead className="text-right pr-7">
                             Actions
                           </TableHead>
@@ -510,6 +524,9 @@ export default function StockAlertsDashboard() {
                                   <span className="text-red-600 font-semibold text-lg">
                                     {alert.totalQuantityNeeded.toLocaleString()}
                                   </span>
+                                </TableCell>
+                                <TableCell className=" text-xs">
+                                  {alert.details}
                                 </TableCell>
                                 <TableCell className="text-right pr-7">
                                   <Button
