@@ -36,23 +36,17 @@ import { cn, stringToColor } from '@/lib/utils';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import {
   BadgeX,
-  Calendar,
   CheckCircle2,
   ChevronLeft,
   ChevronRight,
   ChevronsLeft,
   ChevronsRight,
   CornerDownLeft,
-  CreditCard,
-  DollarSign,
   Edit2,
-  Hash,
   HelpCircle,
-  Mail,
   Plus,
   RotateCcw,
   Save,
-  StoreIcon,
   Trash,
   Truck,
   X,
@@ -60,7 +54,6 @@ import {
 import type React from 'react';
 import { JSX, useEffect, useRef, useState } from 'react';
 import { FiLoader } from 'react-icons/fi';
-import { HiOutlineBadgeCheck } from 'react-icons/hi';
 import {
   Dialog,
   DialogClose,
@@ -720,7 +713,7 @@ export function ProductHistoryTable({
   const handleMouseLeave = () => setIsDragging(false);
 
   return (
-    <Card className="w-full border-0 overflow-hidden">
+    <Card className="w-full overflow-hidden shadow-none">
       <CardContent className="p-0">
         <div
           ref={scrollRef}
@@ -824,7 +817,7 @@ export function ProductHistoryTable({
                     onMouseLeave={() => setHoveredRow(null)}
                   >
                     {/* STORE NAME */}
-                    <TableCell className="py-3">
+                    <TableCell className="py-2">
                       <Badge
                         className="text-white"
                         style={{
@@ -838,7 +831,7 @@ export function ProductHistoryTable({
                     </TableCell>
 
                     {/* Order ID */}
-                    <TableCell className="py-3">
+                    <TableCell className="py-2">
                       <div className="flex items-center gap-2 group/orderId">
                         <Badge
                           variant={product.orderId ? 'outline' : 'secondary'}
@@ -851,18 +844,11 @@ export function ProductHistoryTable({
                         >
                           {product.orderId || 'N/A'}
                         </Badge>
-                        <EditPopover
-                          value={product.orderId}
-                          onSave={(value: string) =>
-                            handleFieldUpdate(product._id, 'orderId', value)
-                          }
-                          label="Order ID"
-                        />
                       </div>
                     </TableCell>
 
                     {/* SKU/UPC */}
-                    <TableCell className="py-3 flex flex-col items-start">
+                    <TableCell className="py-2 flex flex-col items-start">
                       <span className="text-xs text-gray-500 font-medium">
                         SKU: {product.sku}
                       </span>
@@ -872,29 +858,16 @@ export function ProductHistoryTable({
                     </TableCell>
 
                     {/* Purchase Quantity */}
-                    <TableCell className="py-3">
+                    <TableCell className="py-2">
                       <div className="flex items-center gap-2 group/quantity">
                         <span className="font-semibold text-blue-700 bg-blue-50 px-2 py-1 rounded-md">
                           {product.purchaseQuantity}
                         </span>
-                        <EditPopover
-                          value={product.purchaseQuantity}
-                          onSave={(value: string) =>
-                            handleFieldUpdate(
-                              product._id,
-                              'purchaseQuantity',
-                              value
-                            )
-                          }
-                          type="number"
-                          label="Purchase Quantity"
-                          icon={<Hash className="h-4 w-4" />}
-                        />
                       </div>
                     </TableCell>
 
                     {/* Lost */}
-                    <TableCell className="py-3">
+                    <TableCell className="py-2">
                       <div className="flex items-center gap-2 group/lost">
                         <span
                           className={cn(
@@ -906,42 +879,20 @@ export function ProductHistoryTable({
                         >
                           {Number(product.lostQuantity) || 0}
                         </span>
-                        <EditPopover
-                          value={product.lostQuantity}
-                          onSave={(value: string) =>
-                            handleFieldUpdate(
-                              product._id,
-                              'lostQuantity',
-                              value
-                            )
-                          }
-                          type="number"
-                          label="Lost Quantity"
-                          icon={<Hash className="h-4 w-4" />}
-                        />
                       </div>
                     </TableCell>
 
                     {/* Sent to WFS */}
-                    <TableCell className="py-3">
+                    <TableCell className="py-2">
                       <div className="flex items-center gap-2 group/wfs">
                         <span className="font-semibold text-cyan-700 bg-cyan-50 px-2 py-1 rounded-md">
                           {Number(product.sendToWFS) || 0}
                         </span>
-                        <EditPopover
-                          value={product.sendToWFS}
-                          onSave={(value: string) =>
-                            handleFieldUpdate(product._id, 'sendToWFS', value)
-                          }
-                          type="number"
-                          label="Sent to WFS"
-                          icon={<Hash className="h-4 w-4" />}
-                        />
                       </div>
                     </TableCell>
 
                     {/* Remaining Quantity */}
-                    <TableCell className="py-3">
+                    <TableCell className="py-2">
                       <span
                         className={cn(
                           'font-semibold px-2 py-1 rounded-md',
@@ -957,53 +908,44 @@ export function ProductHistoryTable({
                     </TableCell>
 
                     {/* ORDER QUANTITY */}
-                    <TableCell className="py-3 text-center">
+                    <TableCell className="py-2 text-center">
                       <span>
                         {product.orderQuantity ? product.orderQuantity : 0}
                       </span>
                     </TableCell>
 
                     {/* Cost Price */}
-                    <TableCell className="py-3">
+                    <TableCell className="py-2">
                       <div className="flex items-center gap-2 group/cost">
                         <span className="font-semibold text-green-700 bg-green-50 px-2 py-1 rounded-md">
                           ${Number(product.costOfPrice) || 0}
                         </span>
-                        <EditPopover
-                          value={product.costOfPrice}
-                          onSave={(value: string) =>
-                            handleFieldUpdate(product._id, 'costOfPrice', value)
-                          }
-                          type="number"
-                          label="Cost Price"
-                          icon={<DollarSign className="h-4 w-4" />}
-                        />
                       </div>
                     </TableCell>
 
                     {/* Sell Price */}
-                    <TableCell className="py-3">
+                    <TableCell className="py-2">
                       <span className="font-semibold text-blue-700 bg-blue-50 px-2 py-1 rounded-md">
                         ${Number(product.sellPrice) || 0}
                       </span>
                     </TableCell>
 
                     {/* Total Cost */}
-                    <TableCell className="py-3">
+                    <TableCell className="py-2">
                       <span className="font-semibold text-purple-700 bg-purple-50 px-2 py-1 rounded-md">
                         ${totalCost.toFixed(2)}
                       </span>
                     </TableCell>
 
                     {/* WFS Cost */}
-                    <TableCell className="py-3">
+                    <TableCell className="py-2">
                       <span className="font-semibold text-orange-700 bg-orange-50 px-2 py-1 rounded-md">
                         ${wfsCost.toFixed(2)}
                       </span>
                     </TableCell>
 
                     {/* Remaining Price */}
-                    <TableCell className="py-3">
+                    <TableCell className="py-2">
                       <span
                         className={cn(
                           'font-semibold px-2 py-1 rounded-md',
@@ -1017,7 +959,7 @@ export function ProductHistoryTable({
                     </TableCell>
 
                     {/* Supplier */}
-                    <TableCell className="py-3">
+                    <TableCell className="py-2">
                       <div className="flex items-center gap-2 group/supplier">
                         <Badge
                           variant={
@@ -1032,24 +974,11 @@ export function ProductHistoryTable({
                         >
                           {product.supplier?.name || 'No Supplier'}
                         </Badge>
-                        <EditPopoverSupplier
-                          supplierName={product.supplier?.name || 'No Supplier'}
-                          supplierLink={product.supplier?.link || ''}
-                          onSave={(data: any) =>
-                            handleFieldUpdate(
-                              product._id,
-                              'supplier',
-                              JSON.stringify(data)
-                            )
-                          }
-                          label="Supplier"
-                          icon={<StoreIcon className="w-4 h-4" />}
-                        />
                       </div>
                     </TableCell>
 
                     {/* Card */}
-                    <TableCell className="py-3">
+                    <TableCell className="py-2">
                       <div className="flex items-center gap-2 group/card">
                         <Badge
                           variant={product.card ? 'outline' : 'secondary'}
@@ -1062,19 +991,11 @@ export function ProductHistoryTable({
                         >
                           {product.card || 'No Card'}
                         </Badge>
-                        <EditPopover
-                          value={product.card}
-                          onSave={(value: string) =>
-                            handleFieldUpdate(product._id, 'card', value)
-                          }
-                          label="Card"
-                          icon={<CreditCard className="h-4 w-4" />}
-                        />
                       </div>
                     </TableCell>
 
                     {/* Email */}
-                    <TableCell className="py-3">
+                    <TableCell className="py-2">
                       <div className="flex items-center gap-2 group/email">
                         <TooltipProvider>
                           <Tooltip>
@@ -1093,20 +1014,11 @@ export function ProductHistoryTable({
                             </TooltipContent>
                           </Tooltip>
                         </TooltipProvider>
-                        <EditPopover
-                          value={product.email}
-                          onSave={(value: string) =>
-                            handleFieldUpdate(product._id, 'email', value)
-                          }
-                          type="email"
-                          label="Email"
-                          icon={<Mail className="h-4 w-4" />}
-                        />
                       </div>
                     </TableCell>
 
                     {/* Status */}
-                    <TableCell className="py-3">
+                    <TableCell className="py-2">
                       <div className="flex items-center gap-2 group/email">
                         <TooltipProvider>
                           <Tooltip>
@@ -1133,48 +1045,29 @@ export function ProductHistoryTable({
                               className="bg-slate-800 text-white"
                             >
                               <p className="text-sm">
-                                {product.email || 'No Email'}
+                                {product.status || 'No Status'}
                               </p>
                             </TooltipContent>
                           </Tooltip>
                         </TooltipProvider>
-
-                        <EditPopoverSelect
-                          value={product.status}
-                          onSave={(value: string) =>
-                            handleFieldUpdate(product._id, 'status', value)
-                          }
-                          type="text"
-                          label="Status"
-                          icon={<HiOutlineBadgeCheck className="h-4 w-4" />}
-                        />
                       </div>
                     </TableCell>
 
                     {/* Date */}
-                    <TableCell className="py-3">
+                    <TableCell className="py-2">
                       <div className="flex items-center gap-2 group/date">
                         <div className="text-sm bg-amber-50 px-2 py-1 rounded-md">
                           <div className="font-semibold text-amber-800">
                             {formattedDate}
                           </div>
                         </div>
-                        <EditPopover
-                          value={product.date.split('T')[0]}
-                          onSave={(value: string) =>
-                            handleFieldUpdate(product._id, 'date', value)
-                          }
-                          type="date"
-                          label="Date"
-                          icon={<Calendar className="h-4 w-4" />}
-                        />
                       </div>
                     </TableCell>
 
                     {/* Actions */}
-                    <TableCell className="py-3">
+                    <TableCell className="py-2">
                       <div className="flex items-center gap-1">
-                        <AddProductHistory
+                        {/* <AddProductHistory
                           productId={product._id}
                           node={
                             <Button
@@ -1186,7 +1079,7 @@ export function ProductHistoryTable({
                             </Button>
                           }
                           storeId={product.store._id}
-                        />
+                        /> */}
                         <Dialog>
                           <form>
                             <DialogTrigger asChild>

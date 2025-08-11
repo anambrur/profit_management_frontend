@@ -13,7 +13,9 @@ export interface UseOrdersParams {
   limit: number;
   search?: string;
   status?: string;
-  storeId?: string;
+  storeId?: string | string[];
+  fromDate?: string;
+  toDate?: string;
 }
 
 // 🧠 Fetcher Function
@@ -23,6 +25,8 @@ const fetchOrders = async ({
   search,
   status,
   storeId,
+  fromDate,
+  toDate,
 }: UseOrdersParams) => {
   const params = new URLSearchParams({
     page: String(page),
@@ -31,7 +35,12 @@ const fetchOrders = async ({
 
   if (search) params.append('search', search);
   if (status) params.append('status', status);
-  if (storeId) params.append('storeId', storeId);
+  if (storeId) {
+    const storeParam = Array.isArray(storeId) ? storeId.join(',') : storeId;
+    params.append('storeId', storeParam);
+  }
+  if (fromDate) params.append('fromDate', fromDate);
+  if (toDate) params.append('toDate', toDate);
 
   const response = await axiosInstance.get(
     `/api/orders/get-orders?${params.toString()}`
@@ -46,12 +55,18 @@ export function useOrders({
   search = '',
   status = '',
   storeId = '',
+  fromDate = '',
+  toDate = '',
 }: Partial<UseOrdersParams> = {}) {
   return useQuery({
-    queryKey: ['orders', { page, limit, search, status, storeId }],
-    queryFn: () => fetchOrders({ page, limit, search, status, storeId }),
+    queryKey: [
+      'orders',
+      { page, limit, search, status, storeId, fromDate, toDate },
+    ],
+    queryFn: () =>
+      fetchOrders({ page, limit, search, status, storeId, fromDate, toDate }),
     placeholderData: keepPreviousData,
-    staleTime: 60 * 1000,
+    staleTime: 60 * 1000 * 5,
   });
 }
 
@@ -64,12 +79,22 @@ export function usePrefetchOrders() {
     limit: number,
     search?: string,
     status?: string,
-    storeId?: string
+    storeId?: string | string[],
+    fromDate?: string,
+    toDate?: string
   ) => {
     queryClient.prefetchQuery({
       queryKey: [
         'orders',
-        { page: currentPage + 1, limit, search, status, storeId },
+        {
+          page: currentPage + 1,
+          limit,
+          search,
+          status,
+          storeId,
+          fromDate,
+          toDate,
+        },
       ],
       queryFn: () =>
         fetchOrders({
@@ -78,6 +103,8 @@ export function usePrefetchOrders() {
           search,
           status,
           storeId,
+          fromDate,
+          toDate,
         }),
       staleTime: 5 * 60 * 1000, // 5 min
     });

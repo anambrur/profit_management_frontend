@@ -4,12 +4,13 @@ import InventorySummary from '@/components/product-history/InventorySummary';
 import { ProductHistoryTable } from '@/components/product-history/ProductHistory-table';
 import { SearchFilter } from '@/components/product-history/searchFilter';
 import { UploadDialog } from '@/components/product-history/UploadDialog';
+import SelectStore from '@/components/SelectStore';
 import axiosInstance from '@/lib/axiosInstance';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useEffect, useState } from 'react';
 interface SummaryData {
   totalPurchase: number;
-  totalReceive: number;
+  totalOrder: number;
   totalLost: number;
   totalSendToWFS: number;
   totalCost: number;
@@ -104,8 +105,6 @@ export const getProducts = async ({
       }
     );
 
-    console.log('res', res.data);
-
     if (res.data.error) {
       throw new Error(res.data.error);
     }
@@ -128,6 +127,7 @@ export const getProducts = async ({
 
 export default function InventoryPage() {
   const [search, setSearch] = useState('');
+  const queryClient = useQueryClient();
   const [storeIds, setStoreIds] = useState<string[]>([]);
   const [pagination, setPagination] = useState<PaginationInfo>({
     total: 0,
@@ -190,13 +190,9 @@ export default function InventoryPage() {
   };
 
   // ✅ Handle store filter changes (reset to first page)
-  const handleStoreChange = (newStoreIds: string[]) => {
-    setStoreIds(newStoreIds);
-    setPagination((prev) => ({ ...prev, page: 1 }));
-  };
 
   return (
-    <div className="container mx-auto py-8 px-4">
+    <div className="container mx-auto px-2">
       <div className="space-y-6">
         {/* 🔥 Header */}
         <div className="flex items-center justify-between">
@@ -209,16 +205,23 @@ export default function InventoryPage() {
             </p>
           </div>
         </div>
-        <div className="">
-          <InventorySummary
-            summary={apiResponse?.summary}
-            handleStoreChange={handleStoreChange}
-          />
+        <div>
+          <InventorySummary summary={apiResponse?.summary} />
         </div>
 
         <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
           {/* 🔍 Search Filter */}
           <SearchFilter search={search} onSearchChange={handleSearchChange} />
+          <SelectStore
+            selectedStores={storeIds}
+            setSelectedStores={setStoreIds}
+            isLoading={isLoading}
+            clearSelection={() => setStoreIds([])}
+            setPagination={setPagination}
+            handleRefresh={() =>
+              queryClient.invalidateQueries({ queryKey: ['productsHistory'] })
+            }
+          />
           <UploadDialog />
         </div>
 
