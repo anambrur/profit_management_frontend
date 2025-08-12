@@ -191,6 +191,7 @@ export function OrdersTable() {
   const TotalProfit =
     (data.sums.totalSellPrice ? data.sums.totalSellPrice : 0) -
     (data.sums.totalPurchaseCost ? data.sums.totalPurchaseCost : 0);
+  const formatCurrency = (value: number) => `$${Number(value || 0).toFixed(2)}`;
   return (
     <div className="space-y-4">
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -202,21 +203,25 @@ export function OrdersTable() {
           icon={<FaCirclePlus />}
         />
         <SummaryCard
-          value={data.sums.totalPurchaseCost ? data.sums.totalPurchaseCost : 0}
+          value={formatCurrency(
+            data.sums.totalPurchaseCost ? data.sums.totalPurchaseCost : 0
+          )}
           title="Total Purchases"
           description="Total Purchases Price"
           isLoading={isLoading}
           icon={<BiPurchaseTag />}
         />
         <SummaryCard
-          value={data.sums.totalSellPrice ? data.sums.totalSellPrice : 0}
+          value={formatCurrency(
+            data.sums.totalSellPrice ? data.sums.totalSellPrice : 0
+          )}
           title="Total Sells"
           description="Total Sells Price"
           isLoading={isLoading}
           icon={<GrOptimize />}
         />
         <SummaryCard
-          value={TotalProfit.toFixed(2)}
+          value={formatCurrency(TotalProfit)}
           title="Total Profits"
           description="Total Profit Amount"
           isLoading={isLoading}
@@ -305,17 +310,6 @@ export function OrdersTable() {
               />
             </PopoverContent>
           </Popover>
-
-          <Button
-            variant="default"
-            disabled={!startDate || !endDate}
-            onClick={() => {
-              setPage(1);
-              refetch();
-            }}
-          >
-            Apply Filter
-          </Button>
           <Button variant="outline" onClick={clearFilters}>
             Clear Filter
           </Button>

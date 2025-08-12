@@ -1,6 +1,6 @@
 'use client';
 
-import { useMutation } from '@tanstack/react-query';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 
@@ -47,7 +47,7 @@ export function UploadDialog() {
   const [open, setOpen] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
   const [generalError, setGeneralError] = useState<string | null>(null);
-
+  const queryClient = useQueryClient();
   const {
     register,
     handleSubmit,
@@ -88,6 +88,7 @@ export function UploadDialog() {
     },
     onSuccess: (data) => {
       toast.success(data.message || 'Upload successful');
+      queryClient.invalidateQueries({ queryKey: ['productsHistory'] });
       setUploadProgress(100);
     },
     onError: (error: any) => {

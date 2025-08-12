@@ -67,6 +67,7 @@ export function useOrders({
       fetchOrders({ page, limit, search, status, storeId, fromDate, toDate }),
     placeholderData: keepPreviousData,
     staleTime: 60 * 1000 * 5,
+    refetchInterval: 60 * 1000,
   });
 }
 
