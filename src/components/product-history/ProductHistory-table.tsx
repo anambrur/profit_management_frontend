@@ -3,13 +3,7 @@
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from '@/components/ui/popover';
 import {
   Select,
   SelectContent,
@@ -42,14 +36,11 @@ import {
   ChevronsLeft,
   ChevronsRight,
   CornerDownLeft,
-  Edit2,
   HelpCircle,
-  Plus,
+  PencilLine,
   RotateCcw,
-  Save,
   Trash,
   Truck,
-  X,
 } from 'lucide-react';
 import type React from 'react';
 import { JSX, useEffect, useRef, useState } from 'react';
@@ -64,7 +55,9 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '../ui/dialog';
-import AddProductHistory from './ProductAdd';
+import EditProductHistoryDialog, {
+  ProductHistoryEdit,
+} from './EditProductHistory';
 
 // Types
 export interface ProductHistory {
@@ -142,249 +135,6 @@ const formatDate = (dateString: string) => {
 };
 
 // Edit Popover Component
-interface EditPopoverProps {
-  value: string | number | Object;
-  onSave: (value: string) => void;
-  type?: 'text' | 'number' | 'email' | 'date';
-  label: string;
-  icon?: React.ReactNode;
-}
-type EditPopoverSupplierProps = {
-  supplierName: string;
-  supplierLink: string;
-  onSave: (data: { supplierName: string; supplierLink: string }) => void;
-  label?: string;
-  icon?: React.ReactNode;
-};
-
-function EditPopover({
-  value,
-  onSave,
-  type = 'text',
-  label,
-  icon,
-}: EditPopoverProps) {
-  const [isOpen, setIsOpen] = useState(false);
-  const [editValue, setEditValue] = useState(String(value || ''));
-  const handleSave = () => {
-    onSave(editValue);
-    setIsOpen(false);
-  };
-
-  const handleCancel = () => {
-    setEditValue(String(value || ''));
-    setIsOpen(false);
-  };
-
-  return (
-    <Popover open={isOpen} onOpenChange={setIsOpen}>
-      <PopoverTrigger asChild>
-        <Button
-          variant="ghost"
-          size="sm"
-          className="h-6 w-6 p-0 opacity-0 group-hover:opacity-100 transition-opacity"
-        >
-          <Edit2 className="h-3 w-3" />
-        </Button>
-      </PopoverTrigger>
-      <PopoverContent className="w-80 p-4" align="start">
-        <div className="space-y-3">
-          <div className="flex items-center gap-2">
-            {icon}
-            <Label className="text-sm font-medium">{label}</Label>
-          </div>
-          <Input
-            type={type}
-            value={editValue}
-            onChange={(e) => setEditValue(e.target.value)}
-            className="h-9"
-            placeholder={`Enter ${label.toLowerCase()}`}
-          />
-          <div className="flex gap-2 justify-end">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={handleCancel}
-              className="h-8"
-            >
-              <X className="h-3 w-3 mr-1" />
-              Cancel
-            </Button>
-            <Button
-              type="submit"
-              size="sm"
-              onClick={handleSave}
-              className="h-8"
-            >
-              <Save className="h-3 w-3 mr-1" />
-              Save
-            </Button>
-          </div>
-        </div>
-      </PopoverContent>
-    </Popover>
-  );
-}
-
-function EditPopoverSelect({
-  value,
-  onSave,
-  type = 'text',
-  label,
-  icon,
-}: EditPopoverProps) {
-  const [isOpen, setIsOpen] = useState(false);
-  const [editValue, setEditValue] = useState(String(value || ''));
-  const handleSave = () => {
-    onSave(editValue);
-    setIsOpen(false);
-  };
-
-  const handleCancel = () => {
-    setEditValue(String(value || ''));
-    setIsOpen(false);
-  };
-
-  return (
-    <Popover open={isOpen} onOpenChange={setIsOpen}>
-      <PopoverTrigger asChild>
-        <Button
-          variant="ghost"
-          size="sm"
-          className="h-6 w-6 p-0 opacity-0 group-hover:opacity-100 transition-opacity"
-        >
-          <Edit2 className="h-3 w-3" />
-        </Button>
-      </PopoverTrigger>
-      <PopoverContent className="w-80 p-4" align="start">
-        <div className="space-y-3">
-          <div className="flex items-center gap-2">
-            {icon}
-            <Label className="text-sm font-medium">{label}</Label>
-          </div>
-          <Select onValueChange={setEditValue} defaultValue={editValue}>
-            <SelectTrigger className="h-9 w-72 shadow-none">
-              <SelectValue placeholder="" />
-            </SelectTrigger>
-
-            <SelectContent>
-              <SelectItem value="in-transit">In Transit</SelectItem>
-              <SelectItem value="delivered">Delivered</SelectItem>
-              <SelectItem value="return-label-done">Return Label</SelectItem>
-              <SelectItem value="refunded">Refunded</SelectItem>
-              <SelectItem value="return-request-sent">
-                Return Request Sent
-              </SelectItem>
-            </SelectContent>
-          </Select>
-          <div className="flex gap-2 justify-end">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={handleCancel}
-              className="h-8"
-            >
-              <X className="h-3 w-3 mr-1" />
-              Cancel
-            </Button>
-            <Button
-              type="submit"
-              size="sm"
-              onClick={handleSave}
-              className="h-8"
-            >
-              <Save className="h-3 w-3 mr-1" />
-              Save
-            </Button>
-          </div>
-        </div>
-      </PopoverContent>
-    </Popover>
-  );
-}
-
-function EditPopoverSupplier({
-  supplierName,
-  supplierLink,
-  onSave,
-  label = 'Supplier',
-  icon,
-}: EditPopoverSupplierProps) {
-  const [isOpen, setIsOpen] = useState(false);
-  const [name, setName] = useState(supplierName);
-  const [link, setLink] = useState(supplierLink);
-
-  const handleSave = () => {
-    onSave({ supplierName: name, supplierLink: link });
-    setIsOpen(false);
-  };
-
-  const handleCancel = () => {
-    setName(supplierName);
-    setLink(supplierLink);
-    setIsOpen(false);
-  };
-
-  return (
-    <Popover open={isOpen} onOpenChange={setIsOpen}>
-      <PopoverTrigger asChild>
-        <Button
-          variant="ghost"
-          size="sm"
-          className="h-6 w-6 p-0 opacity-0 group-hover:opacity-100 transition-opacity"
-        >
-          <Edit2 className="h-3 w-3" />
-        </Button>
-      </PopoverTrigger>
-      <PopoverContent className="w-80 p-4" align="start">
-        <div className="space-y-3">
-          <div className="flex items-center gap-2">
-            {icon}
-            <Label className="text-sm font-medium">{label} Info</Label>
-          </div>
-          <div className="space-y-2">
-            <div>
-              <Label className="text-xs">Supplier Name</Label>
-              <Input
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                placeholder="Enter supplier name"
-              />
-            </div>
-            <div>
-              <Label className="text-xs">Supplier Link</Label>
-              <Input
-                value={link}
-                onChange={(e) => setLink(e.target.value)}
-                placeholder="Enter supplier link"
-              />
-            </div>
-          </div>
-          <div className="flex gap-2 justify-end pt-2">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={handleCancel}
-              className="h-8"
-            >
-              <X className="h-3 w-3 mr-1" />
-              Cancel
-            </Button>
-            <Button
-              type="submit"
-              size="sm"
-              onClick={handleSave}
-              className="h-8"
-            >
-              <Save className="h-3 w-3 mr-1" />
-              Save
-            </Button>
-          </div>
-        </div>
-      </PopoverContent>
-    </Popover>
-  );
-}
 
 // Pagination Component
 interface PaginationProps {
@@ -533,16 +283,8 @@ function PaginationControls({
   );
 }
 
-// Replace the axios import and replace the updateSingleField function with:
-const updateSingleField = async (id: string, field: string, value: string) => {
-  console.log('id', id);
-  console.log('Field', field);
-  console.log('Value', value);
-  const res = await axiosInstance.patch(`/api/product-history/${id}/update`, {
-    field,
-    value,
-  });
-  return res.data;
+const updateProductHistory = () => {
+  throw new Error('Function not implemented.');
 };
 const deleteProduct = async (id: string) => {
   const res = await axiosInstance.delete(
@@ -563,22 +305,22 @@ export function ProductHistoryTable({
   const [startX, setStartX] = useState(0);
   const [scrollLeft, setScrollLeft] = useState(0);
   const [spacePressed, setSpacePressed] = useState(false);
-  const [editingData, setEditingData] = useState<Record<string, any>>({});
   const [hoveredRow, setHoveredRow] = useState<string | null>(null);
   const client = useQueryClient();
 
-  const mutation = useMutation({
+  const updateMutation = useMutation({
     mutationFn: async ({
       id,
-      field,
-      value,
+      data,
     }: {
       id: string;
-      field: string;
-      value: string;
+      data: ProductHistoryEdit;
     }) => {
-      await updateSingleField(id, field, value);
-      return { id, field, value };
+      const res = await axiosInstance.put(
+        `/api/product-history/update/${id}`,
+        data
+      );
+      return res.data;
     },
     onSuccess: (data) => {
       console.log('Field updated successfully:', data);
@@ -602,22 +344,6 @@ export function ProductHistoryTable({
       console.error('Error deleting product:', error);
     },
   });
-
-  const handleFieldUpdate = (
-    productId: string,
-    field: string,
-    value: string
-  ) => {
-    setEditingData((prev) => ({
-      ...prev,
-      [`${productId}-${field}`]: value,
-    }));
-    mutation.mutate({
-      id: productId,
-      field,
-      value,
-    });
-  };
 
   const getStatusInfo = (status: string) => {
     const map: Record<
@@ -1067,19 +793,37 @@ export function ProductHistoryTable({
                     {/* Actions */}
                     <TableCell className="py-2">
                       <div className="flex items-center gap-1">
-                        {/* <AddProductHistory
-                          productId={product._id}
-                          node={
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              className="h-8 w-8 p-0 hover:bg-blue-50 hover:border-blue-200 transition-colors bg-transparent"
-                            >
-                              <Plus className="h-4 w-4 text-blue-600" />
-                            </Button>
-                          }
-                          storeId={product.store._id}
-                        /> */}
+                        <EditProductHistoryDialog
+                          product={{
+                            storeId: product.storeID,
+                            sku: product.sku,
+                            upc: product.upc,
+                            supplierName: product.supplier?.name || '',
+                            supplierLink: product.supplier?.link || '',
+                            orderId: product.orderId || '',
+                            status: product.status || '',
+                            card: product.card || '',
+                            purchase: product.purchaseQuantity || 0,
+                            lost: product.lostQuantity || 0,
+                            sentToWfs: product.sendToWFS || 0,
+                            costOfPrice: Number(product.costOfPrice) || 0,
+                            sellPrice: Number(product.sellPrice) || 0,
+                            email: product.email || '',
+                            dateTime:
+                              formattedDate ||
+                              new Date().toISOString().split('T')[0],
+                          }}
+                          onSave={async (updatedData) => {
+                            await updateMutation.mutateAsync({
+                              id: product._id,
+                              data: updatedData,
+                            });
+                          }}
+                        >
+                          <Button variant="outline" size="icon">
+                            <PencilLine className="h-4 w-4 mr-2" />
+                          </Button>
+                        </EditProductHistoryDialog>
                         <Dialog>
                           <form>
                             <DialogTrigger asChild>

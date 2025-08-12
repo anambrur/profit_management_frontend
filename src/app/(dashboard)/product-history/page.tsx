@@ -1,18 +1,23 @@
 'use client';
 
+import AddProductHistoryDialog from '@/components/product-history/AddProductHistory';
 import InventorySummary from '@/components/product-history/InventorySummary';
 import { ProductHistoryTable } from '@/components/product-history/ProductHistory-table';
 import { SearchFilter } from '@/components/product-history/searchFilter';
 import { UploadDialog } from '@/components/product-history/UploadDialog';
 import SelectStore from '@/components/SelectStore';
+import { Button } from '@/components/ui/button';
 import axiosInstance from '@/lib/axiosInstance';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { Plus } from 'lucide-react';
 import { useEffect, useState } from 'react';
 interface SummaryData {
   totalPurchase: number;
   totalOrder: number;
   totalLost: number;
   totalSendToWFS: number;
+  remainingOrderQuantity: number;
+  totalLostCost: number;
   totalCost: number;
   totalWFSCost: number;
   remainingQuantity: number;
@@ -222,6 +227,12 @@ export default function InventoryPage() {
               queryClient.invalidateQueries({ queryKey: ['productsHistory'] })
             }
           />
+          <AddProductHistoryDialog>
+            <Button>
+              <Plus />
+              Add History
+            </Button>
+          </AddProductHistoryDialog>
           <UploadDialog />
         </div>
 

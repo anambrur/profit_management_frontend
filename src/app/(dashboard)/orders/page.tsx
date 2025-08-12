@@ -92,16 +92,3 @@ export default function OrdersPage() {
     </div>
   );
 }
-
-// Store Name
-// Sku
-// Units Needed
-// View Orders Id
-
-// Product
-//  OrderID
-// UPC
-// Purchase
-//sent to Wfs
-// cost per item
-// sell Price
