@@ -25,7 +25,7 @@ import {
   TooltipTrigger,
 } from '@/components/ui/tooltip';
 import { Product, usePrefetchProducts, useProducts } from '@/hooks/useProduct';
-import { Store, useStoresData } from '@/hooks/useStoreData';
+import { AllowedStores, useAllowedStores } from '@/store/useAuthStore';
 import {
   AlertTriangle,
   ChevronLeft,
@@ -58,7 +58,8 @@ export function ProductsTable({
   // Debounce search input to reduce unnecessary API calls
   const [debouncedSearch] = useDebounce(search, 500);
 
-  const { data: stores } = useStoresData();
+  // const { data: stores } = useStoresData();
+  const stores = useAllowedStores();
   const { data, isLoading, error, refetch, isFetching } = useProducts({
     page,
     limit,
@@ -301,7 +302,7 @@ function TableFilters({
   onAvailabilityChange: (value: string) => void;
   storeId: string[];
   onMartChange: (value: string[]) => void;
-  stores?: Store[];
+  stores?: AllowedStores[];
 }) {
   return (
     <div className="flex flex-col sm:flex-row gap-4">

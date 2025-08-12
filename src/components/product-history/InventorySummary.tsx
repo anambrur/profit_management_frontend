@@ -16,9 +16,11 @@ interface SummaryData {
   totalPurchase: number;
   totalOrder: number;
   totalLost: number;
+  remainingOrderQuantity: number;
   totalSendToWFS: number;
   totalCost: number;
   totalWFSCost: number;
+  totalLostCost: number;
   remainingQuantity: number;
   remainingCost: number;
 }
@@ -32,7 +34,7 @@ export default function InventorySummary({ summary }: InventorySummaryProps) {
   return (
     <div className=" w-full mx-auto">
       {/* Summary Cards */}
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-5">
         <SummaryCard
           title="Total Purchase"
           value={summary?.totalPurchase}
@@ -48,6 +50,13 @@ export default function InventorySummary({ summary }: InventorySummaryProps) {
           description="Units ordered"
         />
         <SummaryCard
+          title="Remaining Order Quantity"
+          value={summary?.remainingOrderQuantity || 0}
+          isLoading={!summary}
+          icon={<Package className="h-4 w-4 text-muted-foreground" />}
+          description="Units remaining"
+        />
+        <SummaryCard
           title="Total Lost"
           value={summary?.totalLost}
           isLoading={!summary}
@@ -56,11 +65,11 @@ export default function InventorySummary({ summary }: InventorySummaryProps) {
           valueClass="text-destructive"
         />
         <SummaryCard
-          title="Sent to WFS"
-          value={summary?.totalSendToWFS}
+          title="Total Lost Amount"
+          value={formatCurrency(summary?.totalLostCost || 0)}
           isLoading={!summary}
-          icon={<Warehouse className="h-4 w-4 text-muted-foreground" />}
-          description="Units sent to WFS"
+          icon={<AlertTriangle className="h-4 w-4 text-muted-foreground" />}
+          description="Lost cost"
         />
         <SummaryCard
           title="Total Cost"
@@ -70,21 +79,28 @@ export default function InventorySummary({ summary }: InventorySummaryProps) {
           description="Total investment"
         />
         <SummaryCard
-          title="WFS Cost"
-          value={formatCurrency(summary?.totalWFSCost || 0)}
+          title="Sent to WFS"
+          value={summary?.totalSendToWFS}
           isLoading={!summary}
           icon={<Warehouse className="h-4 w-4 text-muted-foreground" />}
-          description="Warehouse cost"
+          description="Units sent to WFS"
         />
         <SummaryCard
-          title="Remaining Quantity"
+          title="Remaining WFS Quantity"
           value={summary?.remainingQuantity}
           isLoading={!summary}
           icon={<Archive className="h-4 w-4 text-muted-foreground" />}
           description="Units in stock"
         />
         <SummaryCard
-          title="Remaining Cost"
+          title="Total WFS Cost"
+          value={formatCurrency(summary?.totalWFSCost || 0)}
+          isLoading={!summary}
+          icon={<DollarSign className="h-4 w-4 text-muted-foreground" />}
+          description="Warehouse cost"
+        />
+        <SummaryCard
+          title="Remaining WFS Cost"
           value={formatCurrency(summary?.remainingCost || 0)}
           isLoading={!summary}
           icon={<DollarSign className="h-4 w-4 text-muted-foreground" />}

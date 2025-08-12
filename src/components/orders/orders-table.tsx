@@ -460,7 +460,7 @@ export function OrdersTable() {
                             key={product._id}
                             className="flex gap-3 p-2 rounded-md hover:bg-muted/20 transition-colors"
                           >
-                            <div className="relative h-16 w-16 rounded-lg overflow-hidden border-2 border-border/20 shadow-sm flex-shrink-0">
+                            <div className="relative h-16 w-16 rounded-lg overflow-hidden border border-gray-200  flex-shrink-0">
                               <Image
                                 src={
                                   product.imageUrl ||

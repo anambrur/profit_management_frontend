@@ -3,42 +3,42 @@ import { useEffect, useState } from 'react';
 import { create } from 'zustand';
 import { createJSONStorage, persist } from 'zustand/middleware';
 
-interface Permission {
-  _id: string;
-  name: string;
-}
-
-interface Role {
-  _id: string;
-  name: string;
-  permissions: Permission[];
-  createdAt: string;
-  updatedAt: string;
-  __v: number;
-}
-interface AllowedStores {
+export interface AllowedStores {
   _id: string;
   storeId: string;
   storeName: string;
   storeEmail: string;
 }
 
-interface User {
+export interface Permission {
+  _id: string;
+  name: string;
+}
+
+export interface UserRole {
+  _id: string;
+  name: string;
+  permissions: Permission[];
+}
+
+export interface UserProfile {
   id: string;
   name: string;
   email: string;
-  roles: Role[];
-  allowedStores: AllowedStores[];
+  roles: UserRole[];
+  status: string;
   profileImage: string | null;
-  lastLogin: string;
-  token?: string;
+  phone?: string;
+  address?: string;
+  allowedStores?: AllowedStores[];
+  createdAt?: string;
+  lastLogin?: string;
 }
 
 interface AuthState {
-  user: User | null;
-  token: string | null;
+  user: UserProfile | null;
   isAuthenticated: boolean;
-  setUser: (user: User | null, token: string | null) => void;
+  setUser: (user: UserProfile | null, token: string | null) => void;
   logout: () => void;
   hasPermission: (permissionName: string) => boolean;
   hasAnyPermission: (permissionNames: string[]) => boolean;
@@ -48,20 +48,17 @@ export const useAuthStore = create<AuthState>()(
   persist(
     (set, get) => ({
       user: null,
-      token: null,
       isAuthenticated: false,
 
-      setUser: (user, token) =>
+      setUser: (user) =>
         set({
           user,
-          token,
           isAuthenticated: true,
         }),
 
       logout: () =>
         set({
           user: null,
-          token: null,
           isAuthenticated: false,
         }),
 
@@ -91,7 +88,6 @@ export const useAuthStore = create<AuthState>()(
       // Only persist these fields
       partialize: (state) => ({
         user: state.user,
-        token: state.token,
         allowStores: state.user?.allowedStores,
       }),
     }
@@ -115,7 +111,6 @@ export const useAllowedStores = () => {
 export const useUser = () => useAuthStore((state) => state.user);
 export const useIsAuthenticated = () =>
   useAuthStore((state) => state.isAuthenticated);
-export const useAuthToken = () => useAuthStore((state) => state.token);
 export const useHasPermission = () =>
   useAuthStore((state) => state.hasPermission);
 export const useHasAnyPermission = () =>

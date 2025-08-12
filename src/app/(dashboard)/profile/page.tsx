@@ -21,34 +21,12 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { cn } from '@/lib/utils';
-import { useAuthStore } from '@/store/useAuthStore';
-import { useQuery } from '@tanstack/react-query';
-import axios from 'axios';
-import {
-  Edit,
-  Mail,
-  MapPin,
-  Phone,
-  Save,
-  Shield,
-  Upload,
-  User,
-  X,
-} from 'lucide-react';
-import { useEffect, useState } from 'react';
 import axiosInstance from '@/lib/axiosInstance';
-
-interface UserProfile {
-  name: string;
-  email: string;
-  username: string;
-  phone: string;
-  address: string;
-  role: string;
-  status: string;
-  profileImage: string;
-}
+import { cn } from '@/lib/utils';
+import { useAuthStore, UserProfile } from '@/store/useAuthStore';
+import { useQuery } from '@tanstack/react-query';
+import { Mail, MapPin, Phone, Shield, Upload, User } from 'lucide-react';
+import { useEffect, useState } from 'react';
 
 export default function Component() {
   const [isEditing, setIsEditing] = useState(false);
@@ -58,8 +36,12 @@ export default function Component() {
     queryKey: ['user', user?.id || null],
     queryFn: async () => {
       const response = await axiosInstance.get(
-        `/api/users/get-user/${user?.id}`
+        `/api/users/get-user/${user?.id}`,
+        {
+          withCredentials: true,
+        }
       );
+      console.log('response', response.data.user);
       return response.data.user;
     },
   });
@@ -67,17 +49,8 @@ export default function Component() {
   const [editedProfile, setEditedProfile] = useState<UserProfile | null>(null);
 
   useEffect(() => {
-    if (profile && profile.username) {
-      setEditedProfile({
-        name: profile.name || '',
-        email: profile.email || '',
-        username: profile.username || '',
-        phone: profile.phone || '',
-        address: profile.address || '',
-        role: profile.role || '',
-        status: profile.status || '',
-        profileImage: profile.profileImage || '',
-      });
+    if (profile && profile._id) {
+      setEditedProfile(profile);
     }
   }, [profile]);
 
@@ -88,27 +61,13 @@ export default function Component() {
 
   const handleSave = () => {
     if (editedProfile) {
-      setProfile({
-        id: profile?.id || '',
-        name: editedProfile.name,
-        email: editedProfile.email,
-        role: editedProfile.role,
-      });
+      setProfile(editedProfile, null);
     }
     setIsEditing(false);
   };
 
   const handleCancel = () => {
-    setEditedProfile({
-      name: profile.name || '',
-      email: profile.email || '',
-      username: profile.username || '',
-      phone: profile.phone || '',
-      address: profile.address || '',
-      role: profile.role || '',
-      status: profile.status || '',
-      profileImage: profile.profileImage || '',
-    });
+    setEditedProfile(null);
     setImagePreview('');
     setIsEditing(false);
   };
@@ -210,18 +169,23 @@ export default function Component() {
                     {isEditing ? editedProfile.name : profile.name}
                   </h2>
                   <p className="text-gray-600">
-                    @{isEditing ? editedProfile.username : profile.username}
+                    @
+                    {(isEditing ? editedProfile.name : profile.name)
+                      .toLowerCase()
+                      .replace(/\s+/g, '')}
                   </p>
                   <div className="flex items-center space-x-2 mt-2">
                     <Badge
                       className={getRoleColor(
-                        isEditing ? editedProfile.role : profile.role
+                        isEditing
+                          ? editedProfile.roles?.[0]?.name
+                          : profile.role
                       )}
                     >
                       <Shield className="h-3 w-3 mr-1" />
                       {(isEditing
-                        ? editedProfile.role
-                        : profile.role
+                        ? editedProfile.roles?.[0]?.name || 'user'
+                        : profile.roles?.[0]?.name || 'user'
                       ).toUpperCase()}
                     </Badge>
                     <Badge
@@ -237,7 +201,7 @@ export default function Component() {
                   </div>
                 </div>
               </div>
-              <div className="flex space-x-2">
+              {/* <div className="flex space-x-2">
                 {!isEditing ? (
                   <Button onClick={handleEdit} variant="outline">
                     <Edit className="h-4 w-4 mr-2" /> Edit Profile
@@ -255,7 +219,7 @@ export default function Component() {
                     </Button>
                   </>
                 )}
-              </div>
+              </div> */}
             </div>
           </CardHeader>
         </Card>
@@ -279,7 +243,8 @@ export default function Component() {
                   {isEditing ? (
                     <Input
                       id={field}
-                      value={editedProfile[field as keyof UserProfile]}
+                      // @ts-ignore
+                      value={editedProfile[field as keyof UserProfile] ?? ''}
                       onChange={(e) =>
                         handleInputChange(
                           field as keyof UserProfile,
@@ -289,19 +254,21 @@ export default function Component() {
                     />
                   ) : (
                     <p className="text-sm text-gray-900 bg-gray-50 p-3 rounded-md">
-                      {field === 'email' ? (
-                        <span className="flex items-center">
-                          <Mail className="h-4 w-4 mr-2 text-gray-500" />
-                          {editedProfile.email}
-                        </span>
-                      ) : field === 'phone' ? (
-                        <span className="flex items-center">
-                          <Phone className="h-4 w-4 mr-2 text-gray-500" />
-                          {editedProfile.phone}
-                        </span>
-                      ) : (
-                        editedProfile[field as keyof UserProfile]
-                      )}
+                      <>
+                        {field === 'email' ? (
+                          <span className="flex items-center">
+                            <Mail className="h-4 w-4 mr-2 text-gray-500" />
+                            {editedProfile.email}
+                          </span>
+                        ) : field === 'phone' ? (
+                          <span className="flex items-center">
+                            <Phone className="h-4 w-4 mr-2 text-gray-500" />
+                            {editedProfile.phone}
+                          </span>
+                        ) : (
+                          editedProfile[field as keyof UserProfile]
+                        )}
+                      </>
                     </p>
                   )}
                 </div>
@@ -321,8 +288,20 @@ export default function Component() {
                 <Label htmlFor="role">Role</Label>
                 {isEditing ? (
                   <Select
-                    value={editedProfile.role}
-                    onValueChange={(value) => handleInputChange('role', value)}
+                    value={editedProfile.roles?.[0]?.name || ''}
+                    onValueChange={(value) => {
+                      if (!editedProfile) return;
+                      const updatedRoles = [...editedProfile.roles];
+                      if (updatedRoles.length > 0) {
+                        updatedRoles[0].name = value;
+                      } else {
+                        updatedRoles.push();
+                      }
+                      setEditedProfile({
+                        ...editedProfile,
+                        roles: updatedRoles,
+                      });
+                    }}
                   >
                     <SelectTrigger className="w-full">
                       <SelectValue placeholder="Select a role" />
@@ -336,8 +315,8 @@ export default function Component() {
                 ) : (
                   <div className="flex items-center text-sm text-gray-900 bg-gray-50 p-3 rounded-md">
                     <Shield className="h-4 w-4 mr-2 text-gray-500" />
-                    {editedProfile.role.charAt(0).toUpperCase() +
-                      editedProfile.role.slice(1)}
+                    {profile.roles?.[0]?.name?.charAt(0)?.toUpperCase() +
+                      profile.roles?.[0]?.name?.slice(1) || 'User'}
                   </div>
                 )}
               </div>

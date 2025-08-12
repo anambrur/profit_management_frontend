@@ -25,9 +25,8 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 
-import { useStoresData } from '@/hooks/useStoreData';
-
 import axiosInstance from '@/lib/axiosInstance';
+import { useAllowedStores } from '@/store/useAuthStore';
 import {
   AlertCircle,
   CheckCircle2,
@@ -43,7 +42,7 @@ interface FormValues {
 }
 
 export function UploadDialog() {
-  const { data: stores = [] } = useStoresData();
+  const stores = useAllowedStores();
 
   const [open, setOpen] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
@@ -248,7 +247,7 @@ export function UploadDialog() {
                     </SelectTrigger>
                     <SelectContent>
                       {stores.map((store) => (
-                        <SelectItem key={store._id} value={store._id}>
+                        <SelectItem key={store._id} value={store._id as string}>
                           <div className="flex flex-col">
                             <span>{store.storeName}</span>
                             <span className="text-xs text-muted-foreground">
