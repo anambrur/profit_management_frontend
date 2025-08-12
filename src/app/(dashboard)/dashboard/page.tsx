@@ -20,7 +20,7 @@ import {
   TrendingUp,
   Users,
 } from 'lucide-react';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
 export interface Period {
   start: string;
@@ -78,9 +78,13 @@ export default function Component() {
   const stores = useAllowedStores();
 
   const { data, isLoading, isError } = useQuery({
-    queryKey: ['profit'],
+    queryKey: ['profit', storeIds],
     queryFn: async (): Promise<DashboardResponse> => {
-      const res = await axiosInstance.get('/api/profits/get-all-profits');
+      const res = await axiosInstance.get('/api/profits/get-all-profits', {
+        params: {
+          storeIds: storeIds.join(',') || undefined,
+        },
+      });
       return res.data;
     },
     refetchInterval: 10000,
@@ -104,6 +108,12 @@ export default function Component() {
     },
     enabled: false,
   });
+
+  useEffect(() => {
+    if (startDate && endDate) {
+      refetchCustomData();
+    }
+  }, [startDate, endDate]);
 
   const salesData = data?.data;
 
@@ -303,14 +313,6 @@ export default function Component() {
               />
             </PopoverContent>
           </Popover>
-
-          <Button
-            variant="default"
-            disabled={!startDate || !endDate || storeIds.length === 0}
-            onClick={() => refetchCustomData()}
-          >
-            Apply Filter
-          </Button>
           <Button variant="outline" onClick={handleClearFilters}>
             Clear Filter
           </Button>
