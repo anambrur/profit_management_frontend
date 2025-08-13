@@ -25,8 +25,8 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 
+import { useAllowedStores } from '@/hooks/dashboard-store';
 import axiosInstance from '@/lib/axiosInstance';
-import { useAllowedStores } from '@/store/useAuthStore';
 import {
   AlertCircle,
   CheckCircle2,

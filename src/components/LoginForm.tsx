@@ -5,7 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import axiosInstance from '@/lib/axiosInstance';
 import { cn } from '@/lib/utils';
-import { useAuthStore } from '@/store/useAuthStore';
+import { AllowedStores, useAuthStore, UserRole } from '@/store/useAuthStore';
 import { useMutation } from '@tanstack/react-query';
 import { AtSignIcon, EyeIcon, EyeOffIcon, LockIcon } from 'lucide-react';
 import { useRouter } from 'next/navigation';
@@ -18,28 +18,14 @@ interface LoginResponse {
     id: string;
     name: string;
     email: string;
-    roles: Array<{
-      _id: string;
-      name: string;
-      permissions: Array<{
-        _id: string;
-        name: string;
-      }>;
-      createdAt: string;
-      updatedAt: string;
-      __v: number;
-    }>;
-    allowedStores: Array<{
-      _id: string;
-      storeId: string;
-      storeName: string;
-      storeEmail: string;
-    }>;
-    createdAt: string;
-    updatedAt: string;
-    __v: number;
+    roles: UserRole[];
+    status: string;
     profileImage: string | null;
-    lastLogin: string;
+    phone?: string;
+    address?: string;
+    allowedStores?: AllowedStores[];
+    createdAt?: string;
+    lastLogin?: string;
   };
   token: string;
   message: string;
@@ -85,8 +71,12 @@ export function LoginForm({
           name: data.user.name,
           email: data.user.email,
           roles: data.user.roles,
+          status: data.user.status,
           profileImage: data.user.profileImage,
+          phone: data.user.phone,
+          address: data.user.address,
           allowedStores: data.user.allowedStores,
+          createdAt: data.user.createdAt,
           lastLogin: data.user.lastLogin,
         },
         data.token

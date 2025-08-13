@@ -1,4 +1,4 @@
-import { useAllowedStores } from '@/store/useAuthStore';
+import { useAllowedStores } from '@/hooks/dashboard-store';
 import { PaginationInfo } from './product-history/ProductHistory-table';
 import { Button } from './ui/button';
 import { Checkbox } from './ui/checkbox';
@@ -38,14 +38,6 @@ export default function SelectStore({
       handleStoreChange(newSelected);
       return newSelected;
     });
-  };
-
-  const getSelectedStoreNames = () => {
-    if (selectedStores.length === 0) return 'All Stores';
-    const names = stores
-      .filter((s) => selectedStores.includes(s._id as string))
-      .map((s) => s.storeName);
-    return names.length > 0 ? names.join(', ') : 'Selected Stores';
   };
   return (
     <div className="flex items-center justify-between">

@@ -9,8 +9,8 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from '@/components/ui/popover';
+import { useAllowedStores } from '@/hooks/dashboard-store';
 import axiosInstance from '@/lib/axiosInstance';
-import { useAllowedStores } from '@/store/useAuthStore';
 import { useQuery } from '@tanstack/react-query';
 import { format } from 'date-fns';
 import {
@@ -250,7 +250,7 @@ export default function Component() {
             </PopoverTrigger>
             <PopoverContent className="w-[240px]">
               <div className="flex flex-col gap-2">
-                {stores.map((store) => (
+                {stores?.map((store) => (
                   <label
                     key={store.storeId}
                     className="flex items-center gap-2 cursor-pointer"

@@ -25,9 +25,9 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { useAllowedStores } from '@/hooks/dashboard-store';
 import useDebounce from '@/hooks/useDebounce';
 import axiosInstance from '@/lib/axiosInstance';
-import { useAllowedStores } from '@/store/useAuthStore';
 import { useQuery } from '@tanstack/react-query';
 import { AlertTriangle, ChevronLeft, ChevronRight, Copy } from 'lucide-react';
 import { useState } from 'react';
@@ -511,7 +511,7 @@ export default function StockAlertsDashboard() {
                               >
                                 <TableCell className="font-mono text-sm pl-7">
                                   <Badge
-                                    className="text-white py-2 px-3 font-medium"
+                                    className="text-white py-1 px-3 font-medium"
                                     style={{ backgroundColor: color }}
                                   >
                                     {alert.storeName}
@@ -530,6 +530,7 @@ export default function StockAlertsDashboard() {
                                 </TableCell>
                                 <TableCell className="text-right pr-7">
                                   <Button
+                                    // className='h-6'
                                     size="sm"
                                     onClick={() =>
                                       handleViewOrders(alert.orderIds)
@@ -695,7 +696,7 @@ export default function StockAlertsDashboard() {
                               >
                                 <TableCell className="font-mono text-sm pl-7">
                                   <Badge
-                                    className="text-white py-2 px-3 font-medium"
+                                    className="text-white py-1 px-3 font-medium"
                                     style={{ backgroundColor: color }}
                                   >
                                     {item.storeObjectId.storeName}
@@ -712,7 +713,7 @@ export default function StockAlertsDashboard() {
                                 <TableCell className="text-right pr-7">
                                   <Badge
                                     variant="destructive"
-                                    className="font-medium"
+                                    className="font-medium py-1"
                                   >
                                     {item.reason}
                                   </Badge>

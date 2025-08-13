@@ -23,8 +23,9 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
+import { useAllowedStores } from '@/hooks/dashboard-store';
 import { useOrders, usePrefetchOrders } from '@/hooks/userOrder';
-import { useAllowedStores } from '@/store/useAuthStore';
+import { stringToColor } from '@/lib/utils';
 import { format } from 'date-fns';
 import {
   CalendarIcon,
@@ -354,29 +355,35 @@ export function OrdersTable() {
           <Table className="text-sm w-full">
             <TableHeader>
               <TableRow>
-                <TableHead className="min-w-[200px] font-semibold text-foreground/80 bg-muted/30 py-4 pl-5">
-                  Order Info
+                <TableHead className=" font-semibold text-foreground/80 bg-muted/30 py-4 pl-5">
+                  Store
+                </TableHead>
+                <TableHead className=" font-semibold text-foreground/80 bg-muted/30 py-4 pl-5">
+                  Order ID
                 </TableHead>
                 <TableHead className="min-w-[280px] font-semibold text-foreground/80 bg-muted/30 py-4">
                   Products
                 </TableHead>
-                <TableHead className="min-w-[160px] font-semibold text-foreground/80 bg-muted/30 py-4">
+                <TableHead className=" font-semibold text-foreground/80 bg-muted/30 py-4">
                   Customer
                 </TableHead>
-                <TableHead className="min-w-[140px] font-semibold text-foreground/80 bg-muted/30 py-4">
+                <TableHead className=" font-semibold text-foreground/80 bg-muted/30 py-4">
                   Shipping
                 </TableHead>
-                <TableHead className="min-w-[120px] font-semibold text-foreground/80 bg-muted/30 py-4">
+                <TableHead className="font-semibold text-foreground/80 bg-muted/30 py-4">
                   Status
                 </TableHead>
-                <TableHead className="min-w-[140px] font-semibold text-foreground/80 bg-muted/30 py-4">
+                <TableHead className=" font-semibold text-foreground/80 bg-muted/30 py-4">
                   Total Cost
                 </TableHead>
-                <TableHead className="min-w-[140px] font-semibold text-foreground/80 bg-muted/30 py-4">
+                <TableHead className=" font-semibold text-foreground/80 bg-muted/30 py-4">
                   Profit
                 </TableHead>
-                <TableHead className="text-right min-w-[120px] font-semibold text-foreground/80 bg-muted/30 py-4 pr-5">
-                  Total
+                <TableHead className="  font-semibold text-foreground/80 bg-muted/30 py-4">
+                  Amount
+                </TableHead>
+                <TableHead className="text-right  font-semibold text-foreground/80 bg-muted/30 py-4 pr-5">
+                  Total Price
                 </TableHead>
               </TableRow>
             </TableHeader>
@@ -434,17 +441,24 @@ export function OrdersTable() {
                         <div className="flex flex-col gap-1 py-1">
                           <Badge
                             variant="secondary"
-                            className="w-fit text-xs font-medium px-2 py-1 bg-blue-50 text-blue-700 border-blue-200"
+                            className="w-fit text-xs font-medium text-white"
+                            style={{
+                              backgroundColor: stringToColor(order.storeId),
+                            }}
                           >
                             {order.storeName}
                           </Badge>
-                          <span className="font-semibold text-foreground group-hover:text-primary transition-colors">
-                            {order.customerOrderId}
-                          </span>
+
                           <p className="text-xs text-muted-foreground/70 font-medium">
                             {formatDate(order.orderDate)}
                           </p>
                         </div>
+                      </TableCell>
+                      {/* ORDER INFO */}
+                      <TableCell className="pl-5">
+                        <span className="font-semibold text-xs text-foreground group-hover:text-primary transition-colors">
+                          {order.customerOrderId}
+                        </span>
                       </TableCell>
 
                       {/* PRODUCT INFO */}
@@ -454,7 +468,7 @@ export function OrdersTable() {
                             key={product._id}
                             className="flex gap-3 p-2 rounded-md hover:bg-muted/20 transition-colors"
                           >
-                            <div className="relative h-16 w-16 rounded-lg overflow-hidden border border-gray-200  flex-shrink-0">
+                            <div className="relative h-10 w-10 rounded-lg overflow-hidden border border-gray-200  flex-shrink-0">
                               <Image
                                 src={
                                   product.imageUrl ||
@@ -479,9 +493,9 @@ export function OrdersTable() {
                                 </TooltipContent>
                               </Tooltip>
 
-                              <div className="text-xs text-muted-foreground/80 font-mono bg-muted/30 px-2 py-1 rounded w-full flex justify-between items-center">
+                              <div className="text-xs text-muted-foreground/80 font-mono bg-muted/30 px-2 rounded w-full flex justify-between items-center">
                                 <span>SKU: {product.productSKU}</span>
-                                <span className="font-medium bg-blue-50 text-blue-700 px-2 py-1 rounded">
+                                <span className="font-medium bg-blue-50 text-blue-700 px-2 rounded mt-0">
                                   Qty: {product.quantity}
                                 </span>
                               </div>
@@ -579,19 +593,18 @@ export function OrdersTable() {
                         </div>
                       </TableCell>
 
+                      {/* Amount */}
+                      <TableCell className="text-left">
+                        <div className="flex flex-col text-gray-500 text-xs">
+                          <span>Sell Price: ${totalSellPrice}</span>
+                          <span>Shipping: ${totalShipping}</span>
+                          <span>Tax: ${totalTax}</span>
+                        </div>
+                      </TableCell>
                       {/* TOTAL */}
-                      <TableCell className="text-right pr-5">
-                        <div className="flex flex-col gap-2 items-end py-1">
-                          <span className="font-medium">
-                            <div className="flex flex-col text-gray-500 text-xs">
-                              <span>Sell Price: ${totalSellPrice}</span>
-                              <span>Shipping: ${totalShipping}</span>
-                              <span>Tax: ${totalTax}</span>
-                            </div>
-                            <div className="font-bold text-sm text-black/70 mt-2">
-                              Total Price: ${totalPrice}
-                            </div>
-                          </span>
+                      <TableCell>
+                        <div className="font-bold text-xs text-black/70 text-right pr-4">
+                          ${totalPrice}
                         </div>
                       </TableCell>
                     </TableRow>
