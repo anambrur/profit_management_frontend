@@ -30,9 +30,9 @@ export function Header() {
         {},
         { withCredentials: true }
       );
-      toast.success('Logout successful');
-      setUser(null, null);
+      useAuthStore.getState().logout();
       router.push('/');
+      toast.success('Logout successful');
     } catch (error) {
       toast.error('Logout failed');
     }

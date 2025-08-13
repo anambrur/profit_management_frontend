@@ -14,8 +14,8 @@ import {
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
+import { useAllowedStores } from '@/hooks/dashboard-store';
 import axiosInstance from '@/lib/axiosInstance';
-import { AllowedStores, useAllowedStores } from '@/store/useAuthStore';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import {
   Calendar,
@@ -67,7 +67,7 @@ export default function AddProductHistoryDialog({
 }: ProductHistoryDialogProps) {
   const [open, setOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const stores: AllowedStores[] = useAllowedStores();
+  const stores = useAllowedStores();
   const {
     register,
     handleSubmit,
@@ -251,7 +251,7 @@ export default function AddProductHistoryDialog({
                   <Controller
                     name="storeId"
                     control={control}
-                    defaultValue={stores?.[0]?._id}
+                    defaultValue={stores?.[0]?._id as string}
                     rules={{ required: 'Store is required' }}
                     render={({ field }) => (
                       <Select
@@ -263,7 +263,10 @@ export default function AddProductHistoryDialog({
                         </SelectTrigger>
                         <SelectContent>
                           {stores?.map((store) => (
-                            <SelectItem key={store._id} value={store._id}>
+                            <SelectItem
+                              key={store._id}
+                              value={store._id as string}
+                            >
                               {store.storeName}
                             </SelectItem>
                           ))}

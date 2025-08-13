@@ -24,8 +24,9 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from '@/components/ui/tooltip';
+import { useAllowedStores } from '@/hooks/dashboard-store';
 import { Product, usePrefetchProducts, useProducts } from '@/hooks/useProduct';
-import { AllowedStores, useAllowedStores } from '@/store/useAuthStore';
+import { Store } from '@/hooks/useStoreData';
 import {
   AlertTriangle,
   ChevronLeft,
@@ -302,7 +303,7 @@ function TableFilters({
   onAvailabilityChange: (value: string) => void;
   storeId: string[];
   onMartChange: (value: string[]) => void;
-  stores?: AllowedStores[];
+  stores?: Store[];
 }) {
   return (
     <div className="flex flex-col sm:flex-row gap-4">

@@ -25,6 +25,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from '@/components/ui/tooltip';
+import { Store } from '@/hooks/useStoreData';
 import axiosInstance from '@/lib/axiosInstance';
 import { cn, stringToColor } from '@/lib/utils';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
@@ -89,21 +90,6 @@ export interface ProductHistory {
   store: Store;
 }
 
-export interface Store {
-  _id: string;
-  storeId: string;
-  storeName: string;
-  storeEmail: string;
-  storeClientId: string;
-  storeClientSecret: string;
-  storeStatus: 'active' | 'inactive' | 'suspended';
-  storeImage: string;
-  storeImagePublicId: string;
-  createdAt: string;
-  updatedAt: string;
-  __v: number;
-}
-
 export interface PaginationInfo {
   total: number;
   page: number;
@@ -133,8 +119,6 @@ const formatDate = (dateString: string) => {
   });
   return { formattedDate, time };
 };
-
-// Edit Popover Component
 
 // Pagination Component
 interface PaginationProps {
@@ -457,61 +441,61 @@ export function ProductHistoryTable({
           <Table>
             <TableHeader>
               <TableRow className="border-b-2 hover:from-slate-150 hover:to-gray-150">
-                <TableHead className="font-semibold min-w-[180px] text-slate-700">
+                <TableHead className="font-semibold text-slate-700">
                   Store Name
                 </TableHead>
-                <TableHead className="font-semibold min-w-[180px] text-slate-700">
+                <TableHead className="font-semibold text-slate-700">
                   Order ID
                 </TableHead>
-                <TableHead className="font-semibold min-w-[160px] text-slate-700">
+                <TableHead className="font-semibold text-slate-700">
                   UPC/SKU
                 </TableHead>
-                <TableHead className="font-semibold min-w-[100px] text-slate-700">
+                <TableHead className="font-semibold  text-slate-700">
                   Purchase
                 </TableHead>
-                <TableHead className="font-semibold min-w-[100px] text-slate-700">
+                <TableHead className="font-semibold  text-slate-700">
                   Lost
                 </TableHead>
-                <TableHead className="font-semibold min-w-[120px] text-slate-700">
+                <TableHead className="font-semibold text-slate-700">
                   Sent to WFS
                 </TableHead>
-                <TableHead className="font-semibold min-w-[100px] text-slate-700">
+                <TableHead className="font-semibold  text-slate-700">
                   Remaining
                 </TableHead>
-                <TableHead className="font-semibold min-w-[160px] text-slate-700">
+                <TableHead className="font-semibold text-slate-700">
                   Order Quantity
                 </TableHead>
-                <TableHead className="font-semibold min-w-[130px] text-slate-700">
+                <TableHead className="font-semibold text-slate-700">
                   Cost Price
                 </TableHead>
-                <TableHead className="font-semibold min-w-[130px] text-slate-700">
+                <TableHead className="font-semibold text-slate-700">
                   Sell Price
                 </TableHead>
-                <TableHead className="font-semibold min-w-[130px] text-slate-700">
+                <TableHead className="font-semibold text-slate-700">
                   Total Cost
                 </TableHead>
-                <TableHead className="font-semibold min-w-[140px] text-slate-700">
+                <TableHead className="font-semibold  text-slate-700">
                   WFS Cost
                 </TableHead>
-                <TableHead className="font-semibold min-w-[140px] text-slate-700">
+                <TableHead className="font-semibold  text-slate-700">
                   Remaining Price
                 </TableHead>
-                <TableHead className="font-semibold min-w-[160px] text-slate-700">
+                <TableHead className="font-semibold  text-slate-700">
                   Supplier
                 </TableHead>
-                <TableHead className="font-semibold min-w-[140px] text-slate-700">
+                <TableHead className="font-semibold  text-slate-700">
                   Card
                 </TableHead>
-                <TableHead className="font-semibold min-w-[200px] text-slate-700">
+                <TableHead className="font-semibold text-slate-700">
                   Email
                 </TableHead>
-                <TableHead className="font-semibold min-w-[200px] text-slate-700">
+                <TableHead className="font-semibold text-slate-700">
                   Status
                 </TableHead>
-                <TableHead className="font-semibold min-w-[160px] text-slate-700">
+                <TableHead className="font-semibold  text-slate-700">
                   Date & Time
                 </TableHead>
-                <TableHead className="font-semibold min-w-[80px] text-slate-700">
+                <TableHead className="font-semibold text-slate-700">
                   Actions
                 </TableHead>
               </TableRow>
@@ -634,7 +618,7 @@ export function ProductHistoryTable({
                     </TableCell>
 
                     {/* ORDER QUANTITY */}
-                    <TableCell className="py-2 text-center">
+                    <TableCell className="py-2">
                       <span>
                         {product.orderQuantity ? product.orderQuantity : 0}
                       </span>
@@ -757,7 +741,7 @@ export function ProductHistoryTable({
 
                                 return (
                                   <span
-                                    className={`text-sm truncate max-w-[160px] px-2 py-1 rounded-md flex items-center gap-1 ${statusInfo.color}`}
+                                    className={`text-sm truncate px-2 py-1 rounded-md flex items-center gap-1 ${statusInfo.color}`}
                                     title={product.status}
                                   >
                                     {statusInfo.icon}

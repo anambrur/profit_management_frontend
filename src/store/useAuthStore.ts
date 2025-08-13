@@ -88,17 +88,16 @@ export const useAuthStore = create<AuthState>()(
       // Only persist these fields
       partialize: (state) => ({
         user: state.user,
-        allowStores: state.user?.allowedStores,
       }),
     }
   )
 );
 
 export const useAllowedStores = () => {
-  const [hydrated, setHydrated] = useState(false);
   const allowedStores = useAuthStore(
     (state) => state.user?.allowedStores || []
   );
+  const [hydrated, setHydrated] = useState(false);
 
   useEffect(() => {
     setHydrated(true);

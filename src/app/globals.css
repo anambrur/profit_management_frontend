@@ -130,3 +130,12 @@
 .hide-scrollbar::-webkit-scrollbar {
   display: none; /* Chrome, Safari, Opera, Edge (Chromium) */
 }
+
+#nprogress .bar {
+  background: #f84c0e;
+  height: 3px;
+}
+
+#nprogress .peg {
+  box-shadow: 0 0 10px #f84c0e, 0 0 5px #f84c0e;
+}

@@ -1,3 +1,4 @@
+import NProgressProvider from '@/components/nprogress-provider';
 import { Providers } from '@/components/providers';
 import type { Metadata } from 'next';
 import { Inter } from 'next/font/google';
@@ -24,6 +25,7 @@ export default function RootLayout({
         className={`${outfit.className} antialiased`}
         suppressHydrationWarning={true}
       >
+        <NProgressProvider />
         <Providers>
           {children}
           <Toaster />

@@ -52,7 +52,7 @@ const navigationItems = [
     title: 'Purchases History Error',
     url: '/history-error',
     icon: MdManageHistory,
-    requiredPermissions: ['product-history:view'],
+    requiredPermissions: ['failed-upload-result:view'],
   },
   {
     title: 'Stores',

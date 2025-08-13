@@ -14,7 +14,7 @@ interface StoreSelectorProps {
   selectedStore: string;
   onStoreChange: (storeId: string) => void;
   stores: Store[];
-  isLoading: boolean; 
+  isLoading: boolean;
 }
 
 export function StoreSelector({
@@ -43,7 +43,7 @@ export function StoreSelector({
         <SelectContent>
           <SelectItem value="all">All Stores</SelectItem>
           {(stores ?? []).map((store) => (
-            <SelectItem key={store._id} value={store._id}>
+            <SelectItem key={store._id} value={store._id as string}>
               <div className="flex flex-col text-sm">
                 <span>{store.storeName}</span>
                 <span className="text-xs text-muted-foreground">

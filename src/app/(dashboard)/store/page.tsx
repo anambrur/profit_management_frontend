@@ -45,7 +45,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { useStoresData } from '@/hooks/useStoreData';
+import { Store, useStoresData } from '@/hooks/useStoreData';
 import axiosInstance from '@/lib/axiosInstance';
 import { useQueryClient } from '@tanstack/react-query';
 import {
@@ -56,23 +56,12 @@ import {
   MoreHorizontal,
   Plus,
   Search,
-  Store,
+  StoreIcon,
   Trash2,
   XCircle,
 } from 'lucide-react';
 import { useMemo, useState } from 'react';
 import toast from 'react-hot-toast';
-
-interface Store {
-  _id: string;
-  storeId: string;
-  storeName: string;
-  storeEmail: string;
-  storeImage?: string;
-  storeStatus: 'active' | 'inactive' | 'suspended' | 'pending';
-  storeClientId: string;
-  // Add other store properties as needed
-}
 
 export default function StoresListPage() {
   const { data: stores = [], isLoading, isError } = useStoresData();
@@ -80,22 +69,11 @@ export default function StoresListPage() {
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [deleteStoreId, setDeleteStoreId] = useState<string>('');
   const [currentPage, setCurrentPage] = useState<'list' | 'add'>('list');
+  const { data: storesData } = useStoresData();
+
+  if (!storesData) return;
 
   const queryClient = useQueryClient();
-
-  const filteredStores = useMemo(() => {
-    return stores.filter((store) => {
-      const matchesSearch =
-        store.storeName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        store.storeEmail.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        store.storeId.toLowerCase().includes(searchTerm.toLowerCase());
-
-      const matchesStatus =
-        statusFilter === 'all' || store.storeStatus === statusFilter;
-
-      return matchesSearch && matchesStatus;
-    });
-  }, [stores, searchTerm, statusFilter]);
 
   const handleDeleteStore = (storeId: string) => {
     setDeleteStoreId(storeId);
@@ -163,7 +141,7 @@ export default function StoresListPage() {
       {
         label: 'Total Stores',
         value: stores.length,
-        icon: <Store className="h-6 w-6 text-blue-600" />,
+        icon: <StoreIcon className="h-6 w-6 text-blue-600" />,
         bg: 'bg-blue-100',
       },
       {
@@ -209,7 +187,7 @@ export default function StoresListPage() {
         />
 
         <StoresTable
-          stores={filteredStores}
+          stores={storesData}
           onCopy={copyToClipboard}
           onDelete={handleDeleteStore}
           getInitials={getInitials}
@@ -244,7 +222,7 @@ function HeaderSection({ onAddStore }: { onAddStore: () => void }) {
   return (
     <div className="flex flex-col md:flex-row items-center justify-between gap-4">
       <div className="flex items-center gap-4">
-        <Store className="h-10 w-10 text-blue-600" />
+        <StoreIcon className="h-10 w-10 text-blue-600" />
         <div>
           <h1 className="text-3xl font-extrabold text-gray-900">
             Stores Management
@@ -434,7 +412,7 @@ function StoresTable({
                         </DropdownMenuItem>
                         <DropdownMenuSeparator />
                         <DropdownMenuItem
-                          onClick={() => onDelete(store._id)}
+                          onClick={() => onDelete(store._id as string)}
                           className="flex items-center gap-2 text-red-600"
                         >
                           <Trash2 className="h-4 w-4" />
@@ -458,7 +436,7 @@ function StoresTable({
 function EmptyState() {
   return (
     <div className="text-center py-16">
-      <Store className="mx-auto h-14 w-14 text-gray-400 mb-4" />
+      <StoreIcon className="mx-auto h-14 w-14 text-gray-400 mb-4" />
       <h3 className="text-xl font-semibold text-gray-900 mb-2">
         No stores found
       </h3>
