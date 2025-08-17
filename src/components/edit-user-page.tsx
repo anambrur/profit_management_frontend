@@ -43,16 +43,16 @@ import {
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { useRole } from '@/hooks/useRole';
+import { useStoresData } from '@/hooks/useStoreData';
+import axiosInstance from '@/lib/axiosInstance';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/components/ui/select';
-import { useRole } from '@/hooks/useRole';
-import { useStoresData } from '@/hooks/useStoreData';
-import axiosInstance from '@/lib/axiosInstance';
+} from './ui/select';
 
 interface Permission {
   _id: string;
@@ -82,7 +82,7 @@ interface EditUser {
   email: string;
   username: string;
   phone: string;
-  role: string;
+  roles: string;
   status: string;
   password?: string;
   confirmPassword?: string;
@@ -119,7 +119,7 @@ export default function UserPageEdit({
     email: '',
     username: '',
     phone: '',
-    role: '',
+    roles: '',
     status: 'active',
     password: '',
     confirmPassword: '',
@@ -152,7 +152,6 @@ export default function UserPageEdit({
     queryKey: ['user', userId],
     queryFn: async () => {
       const response = await axiosInstance.get(`/api/users/get-user/${userId}`);
-      console.log('response', response.data);
       return response.data.user;
     },
     enabled: !!userId,
@@ -166,7 +165,7 @@ export default function UserPageEdit({
         email: existingUser.email || '',
         username: existingUser.username || '',
         phone: existingUser.phone || '',
-        role: existingUser.role || '',
+        roles: existingUser.role || '',
         status: existingUser.status || 'active',
         password: '',
         confirmPassword: '',
@@ -209,10 +208,6 @@ export default function UserPageEdit({
       newErrors.phone = 'Phone number is required';
     } else if (!/^\d{10,15}$/.test(formData.phone.replace(/\s/g, ''))) {
       newErrors.phone = 'Please enter a valid phone number (10-15 digits)';
-    }
-
-    if (!formData.role) {
-      newErrors.role = 'Please select a role';
     }
 
     // Password validation only if changing password
@@ -300,8 +295,9 @@ export default function UserPageEdit({
     mutationFn: async (userData: EditUser) => {
       const updateData = {
         ...userData,
-        roles: userData.role,
+        roles: userData.roles,
         allowedStores: assignedStores,
+        newPassword: changePassword ? formData.password : undefined,
       };
 
       // Remove password fields if not changing password
@@ -322,7 +318,6 @@ export default function UserPageEdit({
       return response.data;
     },
     onSuccess: () => {
-      toast.success('🎉 User updated successfully!');
       queryClient.invalidateQueries({ queryKey: ['users'] });
       queryClient.invalidateQueries({ queryKey: ['user', userId] });
       setSubmitStatus('success');
@@ -340,26 +335,6 @@ export default function UserPageEdit({
     },
   });
 
-  const passwordMutation = useMutation({
-    mutationFn: async (passwordData: { password: string }) => {
-      const response = await axiosInstance.put(
-        `/api/users/update-password/${userId}`,
-        { newPassword: passwordData.password }
-      );
-      return response.data;
-    },
-    onSuccess: () => {
-      toast.success('🎉 Password updated successfully!');
-      queryClient.invalidateQueries({ queryKey: ['user', userId] });
-    },
-    onError: (error: any) => {
-      console.error('Password update error:', error);
-      toast.error(
-        `❌ ${error.response?.data?.message || 'Failed to update password'}`
-      );
-    },
-  });
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!validateForm()) {
@@ -370,35 +345,16 @@ export default function UserPageEdit({
     setIsSubmitting(true);
     setSubmitStatus('idle');
 
-    // For managers, ensure at least one store is assigned
-    if (formData.role === 'manager' && assignedStores.length === 0) {
-      setIsStoreDialogOpen(true);
-      setIsSubmitting(false);
-      return;
-    }
-
     // Prepare the update data
     const updateData = {
       ...formData,
-      roles: formData.role,
+      roles: formData.roles,
       allowedStores: assignedStores,
     };
-
-    // Remove password fields from general update if changing password
-    if (changePassword) {
-      delete updateData.password;
-      delete updateData.confirmPassword;
-    }
 
     // First update the user data
     try {
       await mutation.mutateAsync(updateData);
-
-      // If password change is requested, do that separately
-      if (changePassword && formData.password) {
-        await passwordMutation.mutateAsync({ password: formData.password });
-      }
-
       toast.success('🎉 User updated successfully!');
       setSubmitStatus('success');
       onSuccess?.();
@@ -432,7 +388,7 @@ export default function UserPageEdit({
           email: existingUser.email || '',
           username: existingUser.username || '',
           phone: existingUser.phone || '',
-          role: existingUser.role || '',
+          roles: existingUser.roles.name || '',
           status: existingUser.status || 'active',
           password: '',
           confirmPassword: '',
@@ -681,7 +637,7 @@ export default function UserPageEdit({
 
             {/* Account Settings */}
             <Card className="border-0 bg-white/80 backdrop-blur-sm">
-              <CardHeader className="pb-6">
+              <CardHeader className="">
                 <div className="flex items-center space-x-3">
                   <div className="p-2 bg-orange-100 rounded-lg">
                     <Shield className="h-5 w-5 text-orange-600" />
@@ -695,58 +651,18 @@ export default function UserPageEdit({
                 </div>
               </CardHeader>
               <CardContent className="space-y-6">
-                <div className="space-y-3">
-                  <Label
-                    htmlFor="role"
-                    className="text-sm font-semibold text-gray-700"
-                  >
-                    Role <span className="text-red-500">*</span>
-                  </Label>
-                  <Select
-                    value={formData.role}
-                    onValueChange={(value) => handleInputChange('role', value)}
-                  >
-                    <SelectTrigger
-                      className={`h-12 text-base transition-all duration-200 ${
-                        errors.role
-                          ? 'border-red-300 focus:border-red-500 focus:ring-red-200'
-                          : 'border-gray-200 focus:border-emerald-500 focus:ring-emerald-200'
-                      }`}
-                    >
-                      <SelectValue placeholder="Select a role" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {isRolesLoading ? (
-                        <div className="p-4 text-center text-gray-500">
-                          Loading roles...
-                        </div>
-                      ) : (
-                        roles.map((role: Role) => (
-                          <SelectItem key={role._id} value={role.name}>
-                            <div className="flex items-center space-x-2">
-                              <Badge
-                                variant="outline"
-                                className={`${getRoleBadgeColor(
-                                  role.name
-                                )} font-medium`}
-                              >
-                                {role.name.charAt(0).toUpperCase() +
-                                  role.name.slice(1)}
-                              </Badge>
-                            </div>
-                          </SelectItem>
-                        ))
-                      )}
-                    </SelectContent>
-                  </Select>
-                  {errors.role && (
-                    <p className="text-sm text-red-600 font-medium flex items-center">
-                      <AlertCircle className="h-4 w-4 mr-1" />
-                      {errors.role}
-                    </p>
-                  )}
-                </div>
-
+                <Select>
+                  <SelectTrigger className="w-full">
+                    <SelectValue placeholder="Select a role" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {roles.map((role: Role) => (
+                      <SelectItem key={role._id} value={role._id}>
+                        {role.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
                 {/* Store assignment */}
                 <div className="space-y-3">
                   <Label className="text-sm font-semibold text-gray-700 flex items-center">
@@ -799,39 +715,6 @@ export default function UserPageEdit({
                       ? 'Edit Store Assignment'
                       : 'Assign Stores'}
                   </Button>
-                </div>
-
-                <div className="space-y-3">
-                  <Label
-                    htmlFor="status"
-                    className="text-sm font-semibold text-gray-700"
-                  >
-                    Account Status
-                  </Label>
-                  <Select
-                    value={formData.status}
-                    onValueChange={(value) =>
-                      handleInputChange('status', value)
-                    }
-                  >
-                    <SelectTrigger className="h-12 text-base border-gray-200 focus:border-emerald-500 focus:ring-emerald-200">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="active">
-                        <div className="flex items-center space-x-3">
-                          <div className="h-3 w-3 rounded-full bg-emerald-500"></div>
-                          <span className="font-medium">Active</span>
-                        </div>
-                      </SelectItem>
-                      <SelectItem value="inactive">
-                        <div className="flex items-center space-x-3">
-                          <div className="h-3 w-3 rounded-full bg-red-500"></div>
-                          <span className="font-medium">Inactive</span>
-                        </div>
-                      </SelectItem>
-                    </SelectContent>
-                  </Select>
                 </div>
 
                 {/* Password Change Section */}

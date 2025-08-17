@@ -14,23 +14,41 @@ import {
 } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
 import axiosInstance from '@/lib/axiosInstance';
-import { cn } from '@/lib/utils';
 import { useAuthStore, UserProfile } from '@/store/useAuthStore';
 import { useQuery } from '@tanstack/react-query';
-import { Mail, MapPin, Phone, Shield, Upload, User } from 'lucide-react';
+import {
+  AlertCircle,
+  CheckCircle,
+  Eye,
+  EyeOff,
+  Lock,
+  Mail,
+  Phone,
+  Shield,
+  Upload,
+  User,
+} from 'lucide-react';
 import { useEffect, useState } from 'react';
 
 export default function Component() {
   const [isEditing, setIsEditing] = useState(false);
   const { user, setUser: setProfile } = useAuthStore();
+
+  // Password change state
+  const [changePassword, setChangePassword] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [passwordData, setPasswordData] = useState({
+    currentPassword: '',
+    newPassword: '',
+    confirmPassword: '',
+  });
+  const [passwordErrors, setPasswordErrors] = useState({
+    currentPassword: '',
+    newPassword: '',
+    confirmPassword: '',
+  });
 
   const { data: profile = {}, isLoading } = useQuery({
     queryKey: ['user', user?.id || null],
@@ -41,12 +59,13 @@ export default function Component() {
           withCredentials: true,
         }
       );
-      console.log('response', response.data.user);
       return response.data.user;
     },
   });
 
   const [editedProfile, setEditedProfile] = useState<UserProfile | null>(null);
+  const [imageFile, setImageFile] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState<string>('');
 
   useEffect(() => {
     if (profile && profile._id) {
@@ -54,27 +73,76 @@ export default function Component() {
     }
   }, [profile]);
 
-  const [imageFile, setImageFile] = useState<File | null>(null);
-  const [imagePreview, setImagePreview] = useState<string>('');
-
   const handleEdit = () => setIsEditing(true);
 
-  const handleSave = () => {
-    if (editedProfile) {
-      setProfile(editedProfile, null);
-    }
-    setIsEditing(false);
-  };
+  const handleSave = async () => {
+    try {
+      if (changePassword) {
+        // Validate password fields
+        const errors = {
+          currentPassword: !passwordData.currentPassword
+            ? 'Current password is required'
+            : '',
+          newPassword: !passwordData.newPassword
+            ? 'New password is required'
+            : passwordData.newPassword.length < 8
+            ? 'Password must be at least 8 characters'
+            : !/[A-Z]/.test(passwordData.newPassword)
+            ? 'Password must contain at least one uppercase letter'
+            : !/[0-9]/.test(passwordData.newPassword)
+            ? 'Password must contain at least one number'
+            : '',
+          confirmPassword:
+            passwordData.newPassword !== passwordData.confirmPassword
+              ? 'Passwords do not match'
+              : '',
+        };
 
-  const handleCancel = () => {
-    setEditedProfile(null);
-    setImagePreview('');
-    setIsEditing(false);
+        setPasswordErrors(errors);
+
+        if (Object.values(errors).some((error) => error)) {
+          return;
+        }
+
+        // Call API to change password
+        await axiosInstance.post(
+          '/api/users/change-password',
+          {
+            newPassword: passwordData.newPassword,
+          },
+          {
+            withCredentials: true,
+          }
+        );
+      }
+
+      setIsEditing(false);
+      setChangePassword(false);
+      setPasswordData({
+        currentPassword: '',
+        newPassword: '',
+        confirmPassword: '',
+      });
+    } catch (error) {
+      console.error('Error saving changes:', error);
+      // Handle error appropriately
+    }
   };
 
   const handleInputChange = (field: keyof UserProfile, value: string) => {
     if (!editedProfile) return;
     setEditedProfile((prev) => ({ ...prev!, [field]: value }));
+  };
+
+  const handlePasswordChange = (
+    field: keyof typeof passwordData,
+    value: string
+  ) => {
+    setPasswordData((prev) => ({ ...prev, [field]: value }));
+    // Clear error when user types
+    if (passwordErrors[field as keyof typeof passwordErrors]) {
+      setPasswordErrors((prev) => ({ ...prev, [field]: '' }));
+    }
   };
 
   const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -201,25 +269,6 @@ export default function Component() {
                   </div>
                 </div>
               </div>
-              {/* <div className="flex space-x-2">
-                {!isEditing ? (
-                  <Button onClick={handleEdit} variant="outline">
-                    <Edit className="h-4 w-4 mr-2" /> Edit Profile
-                  </Button>
-                ) : (
-                  <>
-                    <Button
-                      onClick={handleSave}
-                      className="bg-green-600 hover:bg-green-700"
-                    >
-                      <Save className="h-4 w-4 mr-2" /> Save
-                    </Button>
-                    <Button onClick={handleCancel} variant="outline">
-                      <X className="h-4 w-4 mr-2" /> Cancel
-                    </Button>
-                  </>
-                )}
-              </div> */}
             </div>
           </CardHeader>
         </Card>
@@ -276,81 +325,167 @@ export default function Component() {
             </CardContent>
           </Card>
 
+          {/* Password Change Section */}
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center">
-                <MapPin className="h-5 w-5 mr-2" /> Additional Information
+                <Lock className="h-5 w-5 mr-2" /> Security
               </CardTitle>
-              <CardDescription>Location and account settings</CardDescription>
+              <CardDescription>
+                Manage your password and security settings
+              </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="role">Role</Label>
-                {isEditing ? (
-                  <Select
-                    value={editedProfile.roles?.[0]?.name || ''}
-                    onValueChange={(value) => {
-                      if (!editedProfile) return;
-                      const updatedRoles = [...editedProfile.roles];
-                      if (updatedRoles.length > 0) {
-                        updatedRoles[0].name = value;
-                      } else {
-                        updatedRoles.push();
-                      }
-                      setEditedProfile({
-                        ...editedProfile,
-                        roles: updatedRoles,
-                      });
-                    }}
-                  >
-                    <SelectTrigger className="w-full">
-                      <SelectValue placeholder="Select a role" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="admin">Admin</SelectItem>
-                      <SelectItem value="manager">Manager</SelectItem>
-                      <SelectItem value="user">User</SelectItem>
-                    </SelectContent>
-                  </Select>
-                ) : (
-                  <div className="flex items-center text-sm text-gray-900 bg-gray-50 p-3 rounded-md">
-                    <Shield className="h-4 w-4 mr-2 text-gray-500" />
-                    {profile.roles?.[0]?.name?.charAt(0)?.toUpperCase() +
-                      profile.roles?.[0]?.name?.slice(1) || 'User'}
-                  </div>
-                )}
+              <div className="flex items-center space-x-3">
+                <Label
+                  htmlFor="changePassword"
+                  className="text-sm font-semibold text-gray-700 cursor-pointer"
+                >
+                  Change Password
+                </Label>
               </div>
-              <div className="space-y-2">
-                <Label htmlFor="status">Account Status</Label>
-                {isEditing ? (
-                  <select
-                    id="status"
-                    value={editedProfile.status}
-                    onChange={(e) =>
-                      handleInputChange('status', e.target.value)
-                    }
-                    className={cn(
-                      'w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500',
-                      isEditing && 'bg-white'
+
+              {!changePassword && (
+                <div className="space-y-4 pl-6 border-l-2 border-emerald-200">
+                  <div className="space-y-3">
+                    <Label htmlFor="newPassword">
+                      New Password <span className="text-red-500">*</span>
+                    </Label>
+                    <div className="relative">
+                      <Lock className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+                      <Input
+                        id="newPassword"
+                        type={showPassword ? 'text' : 'password'}
+                        value={passwordData.newPassword}
+                        onChange={(e) =>
+                          handlePasswordChange('newPassword', e.target.value)
+                        }
+                        placeholder="Enter new password"
+                        className={`pl-9 ${
+                          passwordErrors.newPassword ? 'border-red-500' : ''
+                        }`}
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowPassword(!showPassword)}
+                        className="absolute right-3 top-3 text-gray-400 hover:text-gray-600"
+                      >
+                        {showPassword ? (
+                          <EyeOff className="h-4 w-4" />
+                        ) : (
+                          <Eye className="h-4 w-4" />
+                        )}
+                      </button>
+                    </div>
+                    {passwordErrors.newPassword && (
+                      <p className="text-sm text-red-600 flex items-center">
+                        <AlertCircle className="h-4 w-4 mr-1" />
+                        {passwordErrors.newPassword}
+                      </p>
                     )}
-                  >
-                    <option value="active">Active</option>
-                    <option value="inactive">Inactive</option>
-                  </select>
-                ) : (
-                  <div className="flex items-center text-sm text-gray-900 bg-gray-50 p-3 rounded-md">
-                    <div
-                      className={`h-2 w-2 rounded-full mr-2 ${
-                        editedProfile.status === 'active'
-                          ? 'bg-green-500'
-                          : 'bg-red-500'
-                      }`}
-                    ></div>
-                    {editedProfile.status.charAt(0).toUpperCase() +
-                      editedProfile.status.slice(1)}
+                    <div className="bg-gray-50 p-3 rounded-lg">
+                      <p className="text-xs text-gray-600 font-medium mb-2">
+                        Password Requirements:
+                      </p>
+                      <div className="grid grid-cols-1 gap-1 text-xs text-gray-500">
+                        <span
+                          className={`flex items-center ${
+                            passwordData.newPassword.length >= 8
+                              ? 'text-emerald-600'
+                              : ''
+                          }`}
+                        >
+                          <CheckCircle
+                            className={`h-3 w-3 mr-1 ${
+                              passwordData.newPassword.length >= 8
+                                ? 'text-emerald-500'
+                                : 'text-gray-300'
+                            }`}
+                          />
+                          At least 8 characters
+                        </span>
+                        <span
+                          className={`flex items-center ${
+                            /[A-Z]/.test(passwordData.newPassword)
+                              ? 'text-emerald-600'
+                              : ''
+                          }`}
+                        >
+                          <CheckCircle
+                            className={`h-3 w-3 mr-1 ${
+                              /[A-Z]/.test(passwordData.newPassword)
+                                ? 'text-emerald-500'
+                                : 'text-gray-300'
+                            }`}
+                          />
+                          One uppercase letter
+                        </span>
+                        <span
+                          className={`flex items-center ${
+                            /[0-9]/.test(passwordData.newPassword)
+                              ? 'text-emerald-600'
+                              : ''
+                          }`}
+                        >
+                          <CheckCircle
+                            className={`h-3 w-3 mr-1 ${
+                              /[0-9]/.test(passwordData.newPassword)
+                                ? 'text-emerald-500'
+                                : 'text-gray-300'
+                            }`}
+                          />
+                          One number
+                        </span>
+                      </div>
+                    </div>
                   </div>
-                )}
-              </div>
+
+                  <div className="space-y-3">
+                    <Label htmlFor="confirmPassword">
+                      Confirm New Password{' '}
+                      <span className="text-red-500">*</span>
+                    </Label>
+                    <div className="relative">
+                      <Lock className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+                      <Input
+                        id="confirmPassword"
+                        type={showConfirmPassword ? 'text' : 'password'}
+                        value={passwordData.confirmPassword}
+                        onChange={(e) =>
+                          handlePasswordChange(
+                            'confirmPassword',
+                            e.target.value
+                          )
+                        }
+                        placeholder="Confirm new password"
+                        className={`pl-9 ${
+                          passwordErrors.confirmPassword ? 'border-red-500' : ''
+                        }`}
+                      />
+                      <button
+                        type="button"
+                        onClick={() =>
+                          setShowConfirmPassword(!showConfirmPassword)
+                        }
+                        className="absolute right-3 top-3 text-gray-400 hover:text-gray-600"
+                      >
+                        {showConfirmPassword ? (
+                          <EyeOff className="h-4 w-4" />
+                        ) : (
+                          <Eye className="h-4 w-4" />
+                        )}
+                      </button>
+                    </div>
+                    {passwordErrors.confirmPassword && (
+                      <p className="text-sm text-red-600 flex items-center">
+                        <AlertCircle className="h-4 w-4 mr-1" />
+                        {passwordErrors.confirmPassword}
+                      </p>
+                    )}
+                  </div>
+                  <Button onClick={handleEdit}>Update Password</Button>
+                </div>
+              )}
             </CardContent>
           </Card>
         </div>

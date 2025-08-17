@@ -219,7 +219,40 @@ export default function PermissionsManagement() {
               onChange={(e) => setSearchTerm(e.target.value)}
               className="max-w-sm"
             />
+            <Button
+              onClick={async () => {
+                const res = await axiosInstance.post(
+                  '/api/error/trigger/products'
+                );
+                if (res.status === 200) {
+                  toast.success('Products triggered successfully');
+                } else {
+                  toast.error('Failed to trigger products');
+                }
+              }}
+              size={'sm'}
+              variant={'outline'}
+            >
+              Products
+            </Button>
+            <Button
+              onClick={async () => {
+                const res = await axiosInstance.post(
+                  '/api/error/trigger/orders'
+                );
+                if (res.status === 200) {
+                  toast.success('Orders triggered successfully');
+                } else {
+                  toast.error('Failed to trigger orders');
+                }
+              }}
+              size={'sm'}
+              variant={'outline'}
+            >
+              Orders
+            </Button>
           </div>
+          {/* <div className=""></div> */}
 
           <div className="grid gap-4">
             {filteredRoles.map((role: Role) => (

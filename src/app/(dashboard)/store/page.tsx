@@ -64,12 +64,12 @@ import { useMemo, useState } from 'react';
 import toast from 'react-hot-toast';
 
 export default function StoresListPage() {
-  const { data: stores = [], isLoading, isError } = useStoresData();
+  const { data: storesData = [], isLoading, isError } = useStoresData();
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [deleteStoreId, setDeleteStoreId] = useState<string>('');
   const [currentPage, setCurrentPage] = useState<'list' | 'add'>('list');
-  const { data: storesData } = useStoresData();
+  const stores = storesData;
 
   if (!storesData) return;
 
