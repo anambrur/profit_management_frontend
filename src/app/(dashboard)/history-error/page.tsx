@@ -22,9 +22,9 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
+import { useAllowedStores } from '@/hooks/dashboard-store';
 import axiosInstance from '@/lib/axiosInstance';
 import { stringToColor } from '@/lib/utils';
-import { useAllowedStores } from '@/store/useAuthStore';
 import { useQuery } from '@tanstack/react-query';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { useState } from 'react';
@@ -96,9 +96,6 @@ export default function FailedUploadsComponent() {
     return <div className="text-red-500 p-4">Error: {error.message}</div>;
   }
 
-  if (!data) {
-    return <p>Data Not Found</p>;
-  }
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -188,31 +185,35 @@ export default function FailedUploadsComponent() {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {data.failedUploadsResults.map((upload) => (
-                      <TableRow key={upload.storeId}>
-                        <TableCell className="px-8 py-4">
-                          <Badge
-                            className="text-white"
-                            style={{
-                              backgroundColor: stringToColor(upload.storeId),
-                            }}
-                          >
-                            {upload.storeObjectId?.storeName || 'N/A'}
-                          </Badge>
-                        </TableCell>
-                        <TableCell className="font-medium px-8 py-4">
-                          {upload.orderId}
-                        </TableCell>
-                        <TableCell>
-                          <code className="text-sm bg-muted px-1 py-0.5 rounded">
-                            {upload.upc || 'N/A'}
-                          </code>
-                        </TableCell>
-                        <TableCell className="text-right px-8">
-                          {upload.errorDetails}
-                        </TableCell>
-                      </TableRow>
-                    ))}
+                    {!data ? (
+                      <div className="p-4">Loading...</div>
+                    ) : (
+                      data.failedUploadsResults.map((upload) => (
+                        <TableRow key={upload._id}>
+                          <TableCell className="px-8 py-4">
+                            <Badge
+                              className="text-white"
+                              style={{
+                                backgroundColor: stringToColor(upload.storeId),
+                              }}
+                            >
+                              {upload.storeObjectId?.storeName || 'N/A'}
+                            </Badge>
+                          </TableCell>
+                          <TableCell className="font-medium px-8 py-4">
+                            {upload.orderId}
+                          </TableCell>
+                          <TableCell>
+                            <code className="text-sm bg-muted px-1 py-0.5 rounded">
+                              {upload.upc || 'N/A'}
+                            </code>
+                          </TableCell>
+                          <TableCell className="text-right px-8">
+                            {upload.errorDetails}
+                          </TableCell>
+                        </TableRow>
+                      ))
+                    )}
                   </TableBody>
                 </Table>
               </div>
@@ -220,32 +221,41 @@ export default function FailedUploadsComponent() {
               {/* 🔘 Pagination */}
               <div className="flex items-center justify-between space-x-2 py-4">
                 <div className="text-sm text-muted-foreground">
-                  Showing {(data.page - 1) * data.limit + 1} to{' '}
-                  {Math.min(data.page * data.limit, data.total)} of {data.total}{' '}
-                  results
+                  {data && (
+                    <div>
+                      {' '}
+                      Showing {(data.page - 1) * data.limit + 1} to{' '}
+                      {Math.min(data.page * data.limit, data.total)} of{' '}
+                      {data.total} results
+                    </div>
+                  )}
                 </div>
                 <div className="flex items-center space-x-2">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => setCurrentPage(data.page - 1)}
-                    disabled={data.page <= 1}
-                  >
-                    <ChevronLeft className="h-4 w-4" />
-                    Previous
-                  </Button>
+                  {data && (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setCurrentPage(data.page - 1)}
+                      disabled={data.page <= 1}
+                    >
+                      <ChevronLeft className="h-4 w-4" />
+                      Previous
+                    </Button>
+                  )}
                   <span className="text-sm">
-                    Page {data.page} of {data.pages}
+                    Page {data && data.page} of {data && data.pages}
                   </span>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => setCurrentPage(data.page + 1)}
-                    disabled={data.page >= data.pages}
-                  >
-                    Next
-                    <ChevronRight className="h-4 w-4" />
-                  </Button>
+                  {data && (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setCurrentPage(data.page + 1)}
+                      disabled={data.page >= data.pages}
+                    >
+                      Next
+                      <ChevronRight className="h-4 w-4" />
+                    </Button>
+                  )}
                 </div>
               </div>
             </>

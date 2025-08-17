@@ -19,6 +19,7 @@ interface SummaryData {
   remainingOrderQuantity: number;
   totalSendToWFS: number;
   totalCost: number;
+  totalOrderAmount: number;
   totalWFSCost: number;
   totalLostCost: number;
   remainingQuantity: number;
@@ -57,19 +58,11 @@ export default function InventorySummary({ summary }: InventorySummaryProps) {
           description="Units remaining"
         />
         <SummaryCard
-          title="Total Lost"
-          value={summary?.totalLost}
-          isLoading={!summary}
-          icon={<AlertTriangle className="h-4 w-4 text-destructive" />}
-          description="Units lost"
-          valueClass="text-destructive"
-        />
-        <SummaryCard
-          title="Total Lost Amount"
-          value={formatCurrency(summary?.totalLostCost || 0)}
+          title="Total Order Amount"
+          value={formatCurrency(summary?.totalOrderAmount || 0)}
           isLoading={!summary}
           icon={<AlertTriangle className="h-4 w-4 text-muted-foreground" />}
-          description="Lost cost"
+          description="Order amount"
         />
         <SummaryCard
           title="Total Cost"
@@ -78,6 +71,15 @@ export default function InventorySummary({ summary }: InventorySummaryProps) {
           icon={<DollarSign className="h-4 w-4 text-muted-foreground" />}
           description="Total investment"
         />
+        <SummaryCard
+          title="Total Lost"
+          value={summary?.totalLost}
+          isLoading={!summary}
+          icon={<AlertTriangle className="h-4 w-4 text-destructive" />}
+          description="Units lost"
+          valueClass="text-destructive"
+        />
+
         <SummaryCard
           title="Sent to WFS"
           value={summary?.totalSendToWFS}

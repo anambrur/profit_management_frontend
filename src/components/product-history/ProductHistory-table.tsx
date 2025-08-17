@@ -463,7 +463,10 @@ export function ProductHistoryTable({
                   Remaining
                 </TableHead>
                 <TableHead className="font-semibold text-slate-700">
-                  Order Quantity
+                  Order(Q)
+                </TableHead>
+                <TableHead className="font-semibold text-slate-700">
+                  Remaining (O.Q)
                 </TableHead>
                 <TableHead className="font-semibold text-slate-700">
                   Cost Price
@@ -621,6 +624,14 @@ export function ProductHistoryTable({
                     <TableCell className="py-2">
                       <span>
                         {product.orderQuantity ? product.orderQuantity : 0}
+                      </span>
+                    </TableCell>
+                    {/* ORDER QUANTITY */}
+                    <TableCell className="py-2">
+                      <span>
+                        {product.purchaseQuantity - product.orderQuantity
+                          ? product.purchaseQuantity - product.orderQuantity
+                          : 0}
                       </span>
                     </TableCell>
 

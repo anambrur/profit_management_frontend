@@ -7,9 +7,16 @@ import { SearchFilter } from '@/components/product-history/searchFilter';
 import { UploadDialog } from '@/components/product-history/UploadDialog';
 import SelectStore from '@/components/SelectStore';
 import { Button } from '@/components/ui/button';
+import { Calendar } from '@/components/ui/calendar';
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from '@/components/ui/popover';
 import axiosInstance from '@/lib/axiosInstance';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { Plus } from 'lucide-react';
+import { format } from 'date-fns';
+import { CalendarIcon, Plus } from 'lucide-react';
 import { useEffect, useState } from 'react';
 interface SummaryData {
   totalPurchase: number;
@@ -18,6 +25,7 @@ interface SummaryData {
   totalSendToWFS: number;
   remainingOrderQuantity: number;
   totalLostCost: number;
+  totalOrderAmount: number;
   totalCost: number;
   totalWFSCost: number;
   remainingQuantity: number;
@@ -89,11 +97,15 @@ export const getProducts = async ({
   storeId,
   page = 1,
   limit = 10,
+  startDate,
+  endDate,
 }: {
   search?: string;
   storeId?: string;
   page?: number;
   limit?: number;
+  startDate?: Date | undefined;
+  endDate?: Date | undefined;
 }) => {
   try {
     const res = await axiosInstance.get(
@@ -104,6 +116,8 @@ export const getProducts = async ({
           storeID: storeId || '',
           page,
           limit,
+          startDate: startDate?.toISOString(),
+          endDate: endDate?.toISOString(),
         },
         withCredentials: true,
         timeout: 5000,
@@ -131,6 +145,8 @@ export const getProducts = async ({
 };
 
 export default function InventoryPage() {
+  const [startDate, setStartDate] = useState<Date>();
+  const [endDate, setEndDate] = useState<Date>();
   const [search, setSearch] = useState('');
   const queryClient = useQueryClient();
   const [storeIds, setStoreIds] = useState<string[]>([]);
@@ -142,13 +158,19 @@ export default function InventoryPage() {
   });
 
   // ✅ Updated query with pagination
-  const { data: apiResponse, isLoading } = useQuery({
+  const {
+    data: apiResponse,
+    isLoading,
+    refetch,
+  } = useQuery({
     queryKey: [
       'productsHistory',
       search,
       storeIds,
       pagination.page,
       pagination.limit,
+      startDate,
+      endDate,
     ],
     queryFn: () =>
       getProducts({
@@ -156,6 +178,8 @@ export default function InventoryPage() {
         storeId: storeIds.join(','),
         page: pagination.page,
         limit: pagination.limit,
+        startDate: startDate,
+        endDate: endDate,
       }),
     retry: 1, // Only retry once
     retryDelay: 1000, // Wait 1 second before retry
@@ -195,7 +219,13 @@ export default function InventoryPage() {
   };
 
   // ✅ Handle store filter changes (reset to first page)
-
+  const clearFilter = () => {
+    setSearch('');
+    setStartDate(undefined);
+    setEndDate(undefined);
+    setStoreIds([]);
+    refetch();
+  };
   return (
     <div className="container mx-auto px-2">
       <div className="space-y-6">
@@ -217,6 +247,45 @@ export default function InventoryPage() {
         <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
           {/* 🔍 Search Filter */}
           <SearchFilter search={search} onSearchChange={handleSearchChange} />
+          <Popover>
+            <PopoverTrigger asChild>
+              <Button
+                variant="outline"
+                className="w-[240px] justify-start text-left font-normal"
+              >
+                <CalendarIcon className="mr-2 h-4 w-4" />
+                {startDate ? format(startDate, 'PPP') : 'Pick start date'}
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-auto p-0" align="start">
+              <Calendar
+                mode="single"
+                selected={startDate}
+                onSelect={setStartDate}
+                initialFocus
+              />
+            </PopoverContent>
+          </Popover>
+
+          <Popover>
+            <PopoverTrigger asChild>
+              <Button
+                variant="outline"
+                className="w-[240px] justify-start text-left font-normal"
+              >
+                <CalendarIcon className="mr-2 h-4 w-4" />
+                {endDate ? format(endDate, 'PPP') : 'Pick end date'}
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-auto p-0" align="start">
+              <Calendar
+                mode="single"
+                selected={endDate}
+                onSelect={setEndDate}
+                initialFocus
+              />
+            </PopoverContent>
+          </Popover>
           <SelectStore
             selectedStores={storeIds}
             setSelectedStores={setStoreIds}
@@ -227,13 +296,22 @@ export default function InventoryPage() {
               queryClient.invalidateQueries({ queryKey: ['productsHistory'] })
             }
           />
+          {search || startDate || endDate || storeIds.length > 0 ? (
+            <Button variant="destructive" onClick={() => clearFilter()}>
+              Clear Filters
+            </Button>
+          ) : null}
           <AddProductHistoryDialog>
             <Button>
               <Plus />
               Add History
             </Button>
           </AddProductHistoryDialog>
-          <UploadDialog />
+          <div className="flex gap-x-3">
+            <UploadDialog>
+              <Button>Upload</Button>
+            </UploadDialog>
+          </div>
         </div>
 
         {/* 📦 Product History Table with Pagination */}

@@ -33,6 +33,7 @@ import {
   FileSpreadsheet,
   Upload,
 } from 'lucide-react';
+import Link from 'next/link';
 import toast from 'react-hot-toast';
 import { Input } from '../ui/input';
 
@@ -41,7 +42,7 @@ interface FormValues {
   storeID: string;
 }
 
-export function UploadDialog() {
+export function UploadDialog({ children }: { children: React.ReactNode }) {
   const stores = useAllowedStores();
 
   const [open, setOpen] = useState(false);
@@ -154,9 +155,7 @@ export function UploadDialog() {
         if (!val) handleClose();
       }}
     >
-      <DialogTrigger asChild>
-        <Button variant="outline">Upload File</Button>
-      </DialogTrigger>
+      <DialogTrigger asChild>{children}</DialogTrigger>
       <DialogContent
         key={open ? 'open' : 'closed'}
         className="sm:max-w-[600px]"
@@ -168,7 +167,14 @@ export function UploadDialog() {
           </DialogTitle>
           <DialogDescription>
             Upload inventory data, product information, or other business data
-            to your selected store.
+            to your selected store.{' '}
+            <Link
+              href={'/Upload-Sheets-Formats.xlsx'}
+              target="_blank"
+              className="text-sm text-blue-700 underline"
+            >
+              Download Sample File
+            </Link>
           </DialogDescription>
         </DialogHeader>
 

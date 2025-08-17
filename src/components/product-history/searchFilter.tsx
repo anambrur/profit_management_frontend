@@ -21,11 +21,11 @@ export function SearchFilter({ search, onSearchChange }: SearchFilterProps) {
 
   return (
     <div className="w-full px-4 py-2">
-      <div className="relative">  
+      <div className="relative">
         <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
         <Input
           placeholder="Search by product name or SKU..."
-          className="pl-10"
+          className="pl-10 bg-white"
           value={input}
           onChange={(e) => setInput(e.target.value)}
         />
