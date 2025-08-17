@@ -4,7 +4,6 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import {
   AlertCircle,
   Building2,
-  Camera,
   CheckCircle,
   Eye,
   EyeOff,
@@ -13,7 +12,6 @@ import {
   Phone,
   Save,
   Shield,
-  Upload,
   User,
   UserPlus,
   X,
@@ -23,7 +21,6 @@ import { toast } from 'react-hot-toast';
 
 // Components
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
@@ -52,7 +49,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { useRole } from '@/hooks/useRole';
-import { useStoresData } from '@/hooks/useStoreData';
+import { Store, useStoresData } from '@/hooks/useStoreData';
 import axiosInstance from '@/lib/axiosInstance';
 
 interface Permission {
@@ -71,11 +68,6 @@ interface Role {
   createdAt: string;
   updatedAt: string;
   __v: number;
-}
-
-interface Store {
-  _id: string;
-  storeName: string;
 }
 
 interface NewUser {
@@ -1053,28 +1045,28 @@ function StoreSelectionDialog({
                 <div
                   key={store._id}
                   className={`flex items-center space-x-4 p-4 rounded-lg border-2 transition-all duration-200 cursor-pointer hover:bg-gray-50 ${
-                    selected.includes(store._id)
+                    selected.includes(store._id as string)
                       ? 'border-emerald-300 bg-emerald-50'
                       : 'border-gray-200'
                   }`}
-                  onClick={() => toggleSelection(store._id)}
+                  onClick={() => toggleSelection(store._id as string)}
                 >
                   <Checkbox
-                    id={store._id}
-                    checked={selected.includes(store._id)}
-                    onCheckedChange={() => toggleSelection(store._id)}
+                    id={store._id as string}
+                    checked={selected.includes(store._id as string)}
+                    onCheckedChange={() => toggleSelection(store._id as string)}
                     className="data-[state=checked]:bg-emerald-500 data-[state=checked]:border-emerald-500"
                   />
                   <div className="flex-1">
                     <Label
-                      htmlFor={store._id}
+                      htmlFor={store._id as string}
                       className="cursor-pointer font-medium text-gray-900 flex items-center"
                     >
                       <Building2 className="h-4 w-4 mr-2 text-gray-500" />
                       {store.storeName}
                     </Label>
                   </div>
-                  {selected.includes(store._id) && (
+                  {selected.includes(store._id as string) && (
                     <CheckCircle className="h-5 w-5 text-emerald-500" />
                   )}
                 </div>
