@@ -50,16 +50,12 @@ import axiosInstance from '@/lib/axiosInstance';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import {
   CheckCircle,
-  Crown,
-  Edit,
   Mail,
   MoreHorizontal,
   Phone,
   Plus,
   Search,
-  Shield,
   Trash2,
-  User,
   UserCheck,
   Users,
   UserX,
@@ -115,6 +111,7 @@ export default function UsersListPage() {
     queryKey: ['users'],
     queryFn: async () => {
       const response = await axiosInstance.get('/api/users/all-user');
+      console.log('response', response.data.users);
       return response.data.users;
     },
   });
@@ -141,7 +138,6 @@ export default function UsersListPage() {
       total: users.length,
       active: users.filter((u) => u.status === 'active').length,
       inactive: users.filter((u) => u.status === 'inactive').length,
-      admins: users.filter((u) => u.roles[0].name === 'admin').length,
     }),
     [users]
   );
@@ -288,7 +284,7 @@ function HeaderSection({ onAddUser }: { onAddUser: () => void }) {
 function StatsSection({
   stats,
 }: {
-  stats: { total: number; active: number; inactive: number; admins: number };
+  stats: { total: number; active: number; inactive: number };
 }) {
   return (
     <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
@@ -309,12 +305,6 @@ function StatsSection({
         label="Inactive"
         value={stats.inactive}
         bgColor="bg-red-100"
-      />
-      <StatCard
-        icon={<Crown className="h-6 w-6 text-purple-600" />}
-        label="Admins"
-        value={stats.admins}
-        bgColor="bg-purple-100"
       />
     </div>
   );
@@ -430,31 +420,6 @@ function UsersTable({
     }
   };
 
-  const getRoleBadgeProps = (role: string) => {
-    switch (role) {
-      case 'admin':
-        return {
-          className: 'bg-purple-100 text-purple-800 hover:bg-purple-200',
-          icon: <Crown className="h-4 w-4" />,
-        };
-      case 'manager':
-        return {
-          className: 'bg-blue-100 text-blue-800 hover:bg-blue-200',
-          icon: <Shield className="h-4 w-4" />,
-        };
-      case 'user':
-        return {
-          className: 'bg-green-100 text-green-800 hover:bg-green-200',
-          icon: <User className="h-4 w-4" />,
-        };
-      default:
-        return {
-          className: 'bg-gray-100 text-gray-800 hover:bg-gray-200',
-          icon: <User className="h-4 w-4" />,
-        };
-    }
-  };
-
   return (
     <Card>
       <CardHeader>
@@ -480,7 +445,6 @@ function UsersTable({
             <TableBody>
               {users.map((user) => {
                 const statusProps = getStatusBadgeProps(user.status);
-                const roleProps = getRoleBadgeProps(user.roles[0].name);
 
                 return (
                   <TableRow key={user._id} className="hover:bg-gray-50">
@@ -520,10 +484,13 @@ function UsersTable({
                       </div>
                     </TableCell>
                     <TableCell>
-                      <Badge className={roleProps.className}>
-                        {roleProps.icon}
+                      <Badge
+                        variant={
+                          user.roles?.[0]?.name ? 'default' : 'destructive'
+                        }
+                      >
                         <span className="ml-1 capitalize">
-                          {user.roles[0].name}
+                          {user.roles?.[0]?.name || 'unassigned'}
                         </span>
                       </Badge>
                     </TableCell>
@@ -569,10 +536,10 @@ function UsersTable({
                             Copy Phone
                           </DropdownMenuItem>
                           <DropdownMenuSeparator />
-                          <DropdownMenuItem onClick={() => onEdit(user)}>
+                          {/* <DropdownMenuItem onClick={() => onEdit(user)}>
                             <Edit className="mr-2 h-4 w-4" />
                             Edit User
-                          </DropdownMenuItem>
+                          </DropdownMenuItem> */}
                           <DropdownMenuItem
                             className="text-red-600 focus:text-red-600"
                             onClick={() => onDelete(user)}
