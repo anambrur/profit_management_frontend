@@ -1,7 +1,11 @@
 'use client';
 
 import axiosInstance from '@/lib/axiosInstance';
-import { useQuery, useQueryClient } from '@tanstack/react-query';
+import {
+  keepPreviousData,
+  useQuery,
+  useQueryClient,
+} from '@tanstack/react-query';
 export interface Product {
   _id: string;
   mart: string;
@@ -14,6 +18,7 @@ export interface Product {
   productName: string;
   productType: string;
   onHand: number;
+  storeId: string;
   available: number;
   publishedStatus: 'PUBLISHED' | 'UNPUBLISHED' | 'SYSTEM_PROBLEM';
   lifecycleStatus: 'ACTIVE' | 'RETIRED';
@@ -70,15 +75,12 @@ const fetchProducts = async (
       `/api/products/get-products?${searchParams.toString()}`
     );
 
-
     return response.data;
   } catch (error) {
     console.error('Fetch products error:', error);
     throw error;
   }
 };
-
-
 
 export function useProducts(params: Partial<UseProductsParams> = {}) {
   const {
@@ -93,7 +95,7 @@ export function useProducts(params: Partial<UseProductsParams> = {}) {
     queryKey: ['products', { page, limit, search, availability, storeId }],
     queryFn: () =>
       fetchProducts({ page, limit, search, availability, storeId }),
-    placeholderData: (previousData) => previousData,
+    placeholderData: keepPreviousData,
   });
 }
 

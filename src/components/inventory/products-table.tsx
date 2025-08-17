@@ -27,6 +27,7 @@ import {
 import { useAllowedStores } from '@/hooks/dashboard-store';
 import { Product, usePrefetchProducts, useProducts } from '@/hooks/useProduct';
 import { Store } from '@/hooks/useStoreData';
+import { stringToColor } from '@/lib/utils';
 import {
   AlertTriangle,
   ChevronLeft,
@@ -207,29 +208,23 @@ export function ProductsTable({
         stores={stores}
       />
 
-      <div className="rounded-lg border bg-card max-h-[70vh] overflow-y-scroll">
-        <Table className="min-w-full table-auto  overflow-scroll">
-          <TableHeader className="sticky left-0 z-20 bg-card min-w-[280px] border-r">
+      <div className="rounded-lg border bg-card">
+        <Table className="min-w-full table-auto border-collapse">
+          <TableHeader className="sticky top-0 z-20 bg-background">
             <TableRow>
-              <TableHead className="min-w-[280px] sticky left-0 z-20 bg-card">
+              <TableHead className="min-w-[280px] sticky left-0 z-20 bg-background">
                 Product
               </TableHead>
-              <TableHead className="min-w-[140px]">Category</TableHead>
-              <TableHead className="min-w-[120px]">SKU</TableHead>
-              <TableHead className="min-w-[160px]">Identifiers</TableHead>
-              <TableHead className="min-w-[120px]">Stock</TableHead>
-              <TableHead className="min-w-[140px]">Inventory</TableHead>
-              <TableHead className="min-w-[100px]">Condition</TableHead>
-              <TableHead className="w-20">Actions</TableHead>
+              <TableHead>Category</TableHead>
+              <TableHead>SKU</TableHead>
+              <TableHead>Identifiers</TableHead>
+              <TableHead>Stock</TableHead>
+              <TableHead>Condition</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
-            {products.map((product) => (
-              <ProductRow
-                key={product._id}
-                product={product}
-                formatDate={formatDate}
-              />
+            {products.map((product, idx) => (
+              <ProductRow key={product._id} product={product} idx={idx} />
             ))}
           </TableBody>
         </Table>
@@ -362,13 +357,7 @@ function TableFilters({
 }
 
 // Extracted component for product row
-function ProductRow({
-  product,
-  formatDate,
-}: {
-  product: Product;
-  formatDate: (date: string) => string;
-}) {
+function ProductRow({ product, idx }: { product: Product; idx: number }) {
   const stock = product.onHand ?? 0;
   const isLowStock = stock < 10 && stock > 0;
   const isOutOfStock = stock === 0;
@@ -377,23 +366,29 @@ function ProductRow({
     ?.replace(/\b\w/g, (l) => l.toUpperCase());
 
   return (
-    <TableRow className="hover:bg-muted/30 transition-colors border-b border-border/30 group">
+    <TableRow
+      className={`hover:bg-muted/30 transition-colors border-b border-border/30 group ${
+        idx % 2 === 0 ? 'bg-muted/70' : ''
+      }`}
+    >
       <TableCell className="max-w-[280px]">
         <TooltipProvider>
           <Tooltip>
             <TooltipTrigger asChild>
-              <div className="cursor-pointer py-2">
+              <div className="cursor-pointer">
                 <Badge
                   variant="secondary"
-                  className="mb-2 text-xs font-medium px-2 py-1 bg-blue-50 text-blue-700 border-blue-200"
+                  className="text-white"
+                  style={{
+                    backgroundColor: stringToColor(
+                      `product.storeId ${product.storeName}`
+                    ),
+                  }}
                 >
                   {product.storeName}
                 </Badge>
                 <p className="truncate font-medium text-foreground group-hover:text-primary transition-colors">
                   {product.productName}
-                </p>
-                <p className="text-xs text-muted-foreground mt-1">
-                  Updated: {formatDate(product.updatedAt)}
                 </p>
               </div>
             </TooltipTrigger>
@@ -412,20 +407,22 @@ function ProductRow({
         </Badge>
       </TableCell>
 
-      <TableCell className="font-mono text-sm font-medium">
-        {product.sku}
+      <TableCell>
+        <div className="flex gap-y-1 flex-col items-start">
+          <p className="text-xs text-muted-foreground">
+            <span className="font-medium">SKU:</span> {product.sku}
+          </p>
+          <p className="text-xs text-muted-foreground">
+            <span className="font-medium">UPC:</span> {product.upc}
+          </p>
+        </div>
       </TableCell>
 
       <TableCell>
-        <div className="flex gap-y-1.5 flex-col items-start">
+        <div className="flex gap-y-1 flex-col items-start">
           <p className="text-xs text-muted-foreground">
             <span className="font-medium">WPID:</span> {product.wpid}
           </p>
-          {product.upc && (
-            <p className="text-xs text-muted-foreground">
-              <span className="font-medium">UPC:</span> {product.upc}
-            </p>
-          )}
           <p className="text-xs text-muted-foreground">
             <span className="font-medium">GTIN:</span> {product.gtin}
           </p>
@@ -448,26 +445,11 @@ function ProductRow({
       </TableCell>
 
       <TableCell>
-        <div className="flex items-center gap-y-1 flex-col">
-          {/* <p className="text-xs text-muted-foreground">
-            <span className="font-medium">On Hand:</span>{' '}
-            <span className="text-foreground font-bold">{product.onHand}</span>
-          </p> */}
-          <p className="text-xs text-muted-foreground">
-            <span className="font-medium">Available:</span>{' '}
-            <span className="text-foreground font-bold">
-              {product.available}
-            </span>
-          </p>
-        </div>
-      </TableCell>
-
-      <TableCell>
-        <div className="flex flex-col gap-2">
+        <div className="flex flex-col gap-1">
           <Badge
             className={
               isOutOfStock
-                ? 'text-xs px-2 py-1 bg-red-100 text-red-800 border-red-200 font-medium'
+                ? 'text-xs px-2 py-1 bg-blue-100 text-blue-800 border-blue-200 font-medium'
                 : isLowStock
                 ? 'text-xs px-2 py-1 bg-yellow-50 text-yellow-700 border-yellow-200 font-medium'
                 : 'text-xs px-2 py-1 bg-green-100 text-green-800 border-green-200 font-medium'
